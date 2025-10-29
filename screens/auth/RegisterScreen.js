@@ -51,7 +51,7 @@ return (
     />
 
     {/* Tombol Daftar */}
-    <TouchableOpacity style={styles.button} onPress={handleRegister}>
+    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("RegisterDetail")} >
         <Text style={styles.buttonText}>DAFTAR</Text>
     </TouchableOpacity>
 

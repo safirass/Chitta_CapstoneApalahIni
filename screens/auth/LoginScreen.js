@@ -9,39 +9,28 @@ Image,
 Alert,
 } from "react-native";
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation, setIsLoggedIn }) {
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
 
 const handleLogin = () => {
     if (email.trim() === "" || password.trim() === "") {
-        Alert.alert("Peringatan", "Email dan Password tidak boleh kosong!");
+    Alert.alert("Peringatan", "Email dan Password tidak boleh kosong!");
     } else {
-        Alert.alert("Sukses", `Login berhasil untuk ${email}`);
-        setIsLoggedIn(true); // ini yang bikin pindah ke Home
+    Alert.alert("Sukses", `Login berhasil untuk ${email}`);
+    console.log("Login dengan Email:", email);
+    console.log("Password:", password);
+
+    // Ganti status login biar masuk ke Home
+    setIsLoggedIn(true);
     }
 };
-
-
-// const handleLogin = () => {
-//     if (email.trim() === "" || password.trim() === "") {
-//     Alert.alert("Peringatan", "Email dan Password tidak boleh kosong!");
-//     } else {
-//     // Dummy response (belum ada backend SSO)
-//     Alert.alert("Sukses", `Login berhasil untuk ${email}`);
-//     console.log("Login dengan Email:", email);
-//     console.log("Password:", password);
-
-//     // Arahkan ke Home/Dashboard (dummy)
-//     navigation.navigate("Home");
-//     }
-// };
 
 return (
     <View style={styles.container}>
     {/* Logo */}
     <Image
-        source={require('../../assets/chitta.png')}
+        source={require("../../assets/chitta.png")}
         style={styles.logo}
         resizeMode="contain"
     />
@@ -49,8 +38,9 @@ return (
     {/* Title */}
     <Text style={styles.title}>LOG IN</Text>
     <Text style={styles.subtitle}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris elementum
-        aliquam facilisis. Nullam tempus diam sed nisl consectetur cursus.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris
+        elementum aliquam facilisis. Nullam tempus diam sed nisl consectetur
+        cursus.
     </Text>
 
     {/* Input Email */}

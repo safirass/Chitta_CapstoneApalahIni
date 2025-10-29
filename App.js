@@ -94,18 +94,19 @@ export default function App() {
         <Stack.Screen name="Tips Tidur" component={TipsTidurScreen} />
         <Stack.Screen name="Pemantauan Stres" component={PemantauanStresScreen} />
         <Stack.Screen name="Tips Stres" component={TipsStresScreen} />
-        <Stack.Screen name="Music" component={MusicScreen} />
+        {/* <Stack.Screen name="Music" component={MusicScreen} /> */}
+        {/* <Stack.Screen name="MusicDetail" component={MusicDetailScreen} options={{ headerShown: false }}/> */}
         <Stack.Screen name="Breathing" component={BreathingScreen} />
-        <Stack.Screen name="Journal" component={JournalScreen} />
+        <Stack.Screen name="Journal" component={JournalScreen} options={{headerShown: false}} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 
-// // export default function App() {
-// //   return <KonsultasiScreen />
-// // }
+// export default function App() {
+//   return <KonsultasiScreen />
+// }
 
 //     // <NavigationContainer>
 //     //   <Stack.Navigator initialRouteName="Home">

@@ -63,6 +63,8 @@ return (
         </View>
     ))}
 
+
+    {/* ini nanti submitnya nyesuaiin ama api yang dibikin mila */}
     <TouchableOpacity style={styles.submitButton}>
         <Text style={styles.submitText}>SUBMIT</Text>
     </TouchableOpacity>

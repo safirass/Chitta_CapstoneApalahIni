@@ -12,7 +12,7 @@ return (
     <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
         <Image style={styles.avatar}
-        source={require('../assets/tidur.png')} 
+        source={require('../assets/nafas.png')}  //ini nanti ikutin api
         />
         <View>
         <Text style={styles.greeting}>Selamat Pagi</Text>
@@ -52,7 +52,7 @@ return (
         <Text style={styles.cardDesc}>Pantau Level Stres Kamu</Text>
     </TouchableOpacity>
 
-    {/* Pelacakan Tidur */}
+    {/* Pelacakan Tidur //kalau ga memungkinkan nanti ini dihapus */} 
     <TouchableOpacity
         style={styles.card}
         onPress={() => navigation.navigate("Pelacakan Tidur")}
@@ -77,8 +77,8 @@ return (
     <View style={styles.card}>
         <Text style={styles.cardTitle}>UPT LKDPDEM</Text>
         <Text style={styles.cardDesc}>
-        [UPT Layanan Konsultasi, Disabilitas, Penegakan Disiplin, dan Etika
-        Mahasiswa UNDIP]
+            [UPT Layanan Konsultasi, Disabilitas, Penegakan Disiplin, dan Etika
+            Mahasiswa UNDIP]
         </Text>
         <Text style={styles.cardDesc}>Hotline: 0811-2500-5757</Text>
         <Text style={styles.cardDesc}>Email: upt.yanmas@undip.id</Text>

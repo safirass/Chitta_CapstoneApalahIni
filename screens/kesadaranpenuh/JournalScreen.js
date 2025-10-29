@@ -1,16 +1,30 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import JournalListScreen from './journal/JournalListScreen';
+import JournalDetailScreen from './journal/JournalDetailScreen';
+import AddEditJournalScreen from './journal/AddEditJournalScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function JournalScreen() {
 return (
-<View style={styles.container}>
-    <Text style={styles.title}>Dengarkan Musik Relaksasi</Text>
-    <Text>Halaman untuk musik relaksasi.</Text>
-</View>
+    <Stack.Navigator>
+    <Stack.Screen 
+        name="JournalList" 
+        component={JournalListScreen} 
+        options={{ title: 'Jurnal',  }} 
+    />
+    <Stack.Screen 
+        name="JournalDetail" 
+        component={JournalDetailScreen} 
+        options={{ title: 'Detail Jurnal' }}
+    />
+    <Stack.Screen 
+        name="AddEditJournal" 
+        component={AddEditJournalScreen} 
+        options={{ title: 'Jurnal' }} 
+    />
+    </Stack.Navigator>
 );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: "#EFECFE", },
-    title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
-});

@@ -1,149 +1,162 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+
+// === Data Dummy ===
+const dummyStressData = [
+{ date: "2025-01-01", level: 3 },
+{ date: "2025-01-02", level: 2 },
+{ date: "2025-01-03", level: 1 },
+{ date: "2025-01-04", level: 2 },
+{ date: "2025-01-05", level: 3 },
+{ date: "2025-01-06", level: 1 },
+{ date: "2025-01-07", level: 3 },
+];
 
 export default function PemantauanStresScreen({ navigation }) {
-    const [sleepData, setSleepData] = useState(null); // data tidur dari API
-    const [loading, setLoading] = useState(true);
+const [selectedDate, setSelectedDate] = useState("2025-01-07");
+const [selectedData, setSelectedData] = useState(null);
 
-    useEffect(() => {
-        // Simulasi ambil data dari API
-        setTimeout(() => {
-        // setSleepData(null); // Uncomment untuk test kondisi "tidak ada data"
-        setSleepData({
-            duration: "0j 0m",
-            start: "--:--",
-            end: "--:--",
-            quality: "-",
-            chart: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // contoh data dummy
-        });
-        setLoading(false);
-        }, 1000);
-    }, []);
+useEffect(() => {
+    const data = dummyStressData.find((item) => item.date === selectedDate);
+    setSelectedData(data);
+}, [selectedDate]);
 
-    if (loading) {
-        return (
-        <View style={styles.center}>
-            <ActivityIndicator size="large" color="#534DD9" />
-        </View>
-        );
-    }
+const getLevelDescription = (level) => {
+    if (level === 1) return "rendah";
+    if (level === 2) return "sedang";
+    if (level === 3) return "tinggi";
+};
 
-    if (!sleepData) {
-        return (
-        <View style={styles.center}>
-            <Text style={styles.noDataText}>Data belum tersedia</Text>
-        </View>
-        );
-    }
+return (
+    <ScrollView style={styles.container}>
 
-    return (
-        <ScrollView style={styles.container}>
-        {/* Chart Placeholder */}
-        <View style={styles.chartBox}>
-            <Text style={styles.sectionTitle}>Pemantauan Stres</Text>
-            {/* Nanti ganti pakai BarChart atau LineChart */}
-            <View style={styles.chartPlaceholder}>
-            {sleepData.chart.map((val, idx) => (
-                <View key={idx} style={[styles.bar, { height: val * 10 }]} />
-            ))}
-            </View>
-        </View>
+    {/* Bagian Grafik Sederhana */}
+    <View style={styles.graphContainer}>
+        {dummyStressData.map((item, index) => (
+        <TouchableOpacity
+            key={index}
+            onPress={() => setSelectedDate(item.date)}
+            style={[
+            styles.bar,
+            {
+                height: item.level * 30 + 20,
+                backgroundColor:
+                item.level === 1
+                    ? "#FFD93D"
+                    : item.level === 2
+                    ? "#FFB302"
+                    : "#E74C3C",
+            },
+            ]}
+        />
+        ))}
+    </View>
 
-        {/* Durasi Tidur */}
+    {/* Informasi Detail */}
+    {selectedData && (
         <View style={styles.card}>
-            <Text style={styles.cardTitle}>Durasi Tidur</Text>
-            <Text style={styles.duration}>{sleepData.duration}</Text>
-            <Text style={styles.subText}>
-            {sleepData.start} - {sleepData.end}
-            </Text>
-            <Text style={styles.subText}>
-            Waktu tidur cukup, Lorem ipsum dolor sit amet.
-            </Text>
+        <Text style={styles.dateText}>7 Januari 2025</Text>
+        <Text style={styles.levelText}>
+            Tingkat stres kamu hari ini pada level {selectedData.level},{" "}
+            yang artinya berada pada level {getLevelDescription(selectedData.level)}.
+        </Text>
+        <Text style={styles.desc}>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam orci eros,
+            feugiat nec lobortis quis, feugiat et augue. Fusce ac leo eu ante rutrum
+            fringilla at vitae massa. Fusce tellus purus, volutpat ut tristique in,
+            dictum vel est.
+        </Text>
         </View>
+    )}
 
-        {/* Kualitas Tidur */}
-        <View style={styles.card}>
-            <Text style={styles.cardTitle}>Kualitas Tidur</Text>
-            <Text style={styles.subText}>
-            {sleepData.start} - {sleepData.end}
-            </Text>
-            <View style={styles.qualityRow}>
-            {[1, 2, 3, 4, 5].map((q) => (
-                <View
-                key={q}
-                style={[
-                    styles.qualityBox,
-                    { backgroundColor: q <= sleepData.quality ? "#534DD9" : "#ddd" },
-                ]}
-                />
-            ))}
-            </View>
-            <Text style={styles.subText}>
-            Anda tidur selama {sleepData.duration}, berada pada rentang yang disarankan.
-            </Text>
-        </View>
+    {/* Navigasi ke fitur lain */}
+    <TouchableOpacity
+        style={styles.linkCard}
+        onPress={() => navigation.navigate("Kesadaran Penuh")}
+    >
+        <Text style={styles.linkTitle}>Kesadaran Penuh {">"}</Text>
+        <Text style={styles.linkDesc}>
+        Ruang untuk kamu fokus, menulis jurnal, dan merasakan ketenangan.
+        </Text>
+    </TouchableOpacity>
 
-        {/* Tips */}
-        <View style={styles.card}>
-            <Text style={styles.cardTitle}>Tips Mengurangi Stres</Text>
-            <Text style={styles.subText}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            </Text>
-            <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate("Tips Stres")}
-            >
-            <Text style={styles.buttonText}>Lihat Tips</Text>
-            </TouchableOpacity>
-        </View>
-        </ScrollView>
-    );
+    <TouchableOpacity
+        style={styles.linkCard}
+        onPress={() => navigation.navigate("Tips Stres")}
+    >
+        <Text style={styles.linkTitle}>Tips Mengatasi Stres {">"}</Text>
+        <Text style={styles.linkDesc}>
+        Dapatkan tips dan saran untuk mengelola stres dengan lebih baik.
+        </Text>
+    </TouchableOpacity>
+    </ScrollView>
+);
 }
 
+// === STYLE ===
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#EFECFE", padding: 16 },
-    center: { flex: 1, justifyContent: "center", alignItems: "center" },
-    noDataText: { fontSize: 16, color: "#999" },
-    chartBox: { marginBottom: 16 },
-    chartPlaceholder: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-end",
-        marginTop: 12,
-        height: 120,
-    },
-    bar: {
-        width: 20,
-        borderRadius: 6,
-        backgroundColor: "#534DD9",
-    },
-    sectionTitle: { fontSize: 18, fontWeight: "600", color: "#041062" },
-    card: {
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    cardTitle: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
-    duration: { fontSize: 28, fontWeight: "700", color: "#041062" },
-    subText: { fontSize: 14, color: "#555", marginTop: 4 },
-    qualityRow: { flexDirection: "row", marginVertical: 8 },
-    qualityBox: {
-        width: 40,
-        height: 12,
-        marginRight: 4,
-        borderRadius: 4,
-    },
-    button: {
-        marginTop: 12,
-        backgroundColor: "#534DD9",
-        padding: 12,
-        borderRadius: 8,
-        alignItems: "center",
-    },
-    buttonText: { color: "#fff", fontWeight: "600" },
+container: {
+    flex: 1,
+    backgroundColor: "#F5F4FF",
+    paddingHorizontal: 16,
+    paddingTop: 50,
+},
+title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#041062",
+    marginBottom: 20,
+},
+graphContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 30,
+},
+bar: {
+    width: 20,
+    borderRadius: 10,
+},
+card: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+},
+dateText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#041062",
+    marginBottom: 8,
+},
+levelText: {
+    fontSize: 14,
+    color: "#000",
+    marginBottom: 10,
+},
+desc: {
+    fontSize: 13,
+    color: "#555",
+},
+linkCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 15,
+    elevation: 2,
+},
+linkTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#041062",
+},
+linkDesc: {
+    fontSize: 13,
+    color: "#555",
+    marginTop: 4,
+},
 });

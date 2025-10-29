@@ -10,7 +10,7 @@ useEffect(() => {
     setTimeout(() => {
     // setSleepData(null); // Uncomment untuk test kondisi "tidak ada data"
     setSleepData({ //enih data dummy
-        duration: "0j 0m",
+        duration: "16j 20m",
         start: "--:--",
         end: "--:--",
         quality: "-",
@@ -45,8 +45,16 @@ const parseDuration = (duration) => {
 };
 
 
-const sleepHours = parseDuration(sleepData.duration);
+const sleepHours = parseDuration(sleepData.duration); //nanti ini dibuat dua message, satu untuk durasi, satu untuk kualitas
 let sleepMessage = "";
+    if (sleepHours < 6) {
+    sleepMessage = "Rentang waktu tidur kurang dari yang disarankan.";
+    } else if (sleepHours >= 6 && sleepHours <= 8) {
+    sleepMessage = "Tidur Anda berada pada rentang yang disarankan.";
+    } else {
+    sleepMessage = "Tidur Anda berlebihan, coba kurangi sedikit.";
+    }
+let sleepQuality = parseInt(sleepData.quality);
     if (sleepHours < 6) {
     sleepMessage = "Rentang waktu tidur kurang dari yang disarankan.";
     } else if (sleepHours >= 6 && sleepHours <= 8) {
@@ -78,7 +86,7 @@ return (
         {sleepData.start} - {sleepData.end}
         </Text>
         <Text style={styles.subText}>
-        Waktu tidur cukup, Lorem ipsum dolor sit amet.
+        {sleepMessage}
         </Text>
     </View>
 
@@ -113,7 +121,7 @@ return (
         <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("Tips Tidur")}
-        >
+        >AQW2
         <Text style={styles.buttonText}>Lihat Tips</Text>
         </TouchableOpacity>
     </View>

@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'rea
 export default function KesadaranPenuhScreen({ navigation }) {
 return (
     <ScrollView style={styles.container}>
-    <Text style={styles.header}>Kesadaran Penuh</Text>
 
     {/* Card 1 */}
     <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Music')}>
@@ -15,8 +14,8 @@ return (
             elementum aliquam facilisis.
         </Text>
         </View>
-        <Image
-        source={{recuire: '../assets/musik.png' }}
+        <Image 
+        source={ require ('../assets/musik.png')}
         style={styles.image}
         />
     </TouchableOpacity>
@@ -31,8 +30,9 @@ return (
         </Text>
         </View>
         <Image
-        source={{recuire: '../assets/nafas.png'}}
+        source={ require ('../assets/nafas.png')}
         style={styles.image}
+
         />
     </TouchableOpacity>
 
@@ -46,7 +46,7 @@ return (
         </Text>
         </View>
         <Image
-        source={{ recuire: '../assets/jurnal.png' }}
+        source={ require ('../assets/jurnal.png')}
         style={styles.image}
         />
     </TouchableOpacity>
@@ -55,45 +55,44 @@ return (
 }
 
 const styles = StyleSheet.create({
-container: {
-    flex: 1,
-    backgroundColor: '#EFECFE',
-    padding: 16,
-},
-header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 16,
-},
-card: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 3,
-},
-textContainer: {
-    flex: 1,
-    paddingRight: 10,
-},
-title: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 6,
-},
-desc: {
-    fontSize: 13,
-    color: '#666',
-},
-image: {
-    width: 70,
-    height: 70,
-    resizeMode: 'contain',
-},
-});
+    container: {
+        flex: 1,
+        backgroundColor: '#EFECFE',
+        padding: 16,
+    },
+    header: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        marginBottom: 16,
+    },
+    card: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 6,
+        elevation: 3,
+    },
+    textContainer: {
+        flex: 1,
+        paddingRight: 10,
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 6,
+    },
+    desc: {
+        fontSize: 13,
+        color: '#666',
+    },
+    image: {
+        width: 70,
+        height: 70,
+    },
+});7

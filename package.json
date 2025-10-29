@@ -28,7 +28,9 @@
     "react-native-screens": "~4.11.1",
     "react-native-svg": "^15.13.0",
     "react-native-web": "^0.20.0",
-    "recharts": "^3.2.1"
+    "recharts": "^3.2.1",
+    "expo-image-picker": "~16.1.4",
+    "expo-av": "~15.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

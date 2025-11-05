@@ -1,24 +1,52 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import {
+View,
+Text,
+StyleSheet,
+ScrollView,
+TouchableOpacity,
+ActivityIndicator,
+} from "react-native";
+import Container from "../components/container";
+import Card from "../components/card";
 
 export default function PelacakanTidurScreen({ navigation }) {
 const [sleepData, setSleepData] = useState(null);
+const [selectedData, setSelectedData] = useState(null);
 const [loading, setLoading] = useState(true);
+const scrollViewRef = useRef(null);
 
 useEffect(() => {
-    // Simulasi ambil data dari API
     setTimeout(() => {
-    // setSleepData(null); // Uncomment untuk test kondisi "tidak ada data"
-    setSleepData({ //enih data dummy
-        duration: "16j 20m",
-        start: "--:--",
-        end: "--:--",
-        quality: "-",
-        chart: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
-    });
+    const dummy = {
+        chart: [
+        { date: "30/10", hours: 5.2, start: "23:30", end: "04:45" },
+        { date: "31/10", hours: 6.5, start: "22:45", end: "05:15" },
+        { date: "01/11", hours: 7.1, start: "22:00", end: "05:05" },
+        { date: "02/11", hours: 6.8, start: "23:00", end: "05:50" },
+        { date: "03/11", hours: 15.5, start: "00:10", end: "05:40" },
+        { date: "04/11", hours: 1.0, start: "21:45", end: "05:45" },
+        { date: "05/11", hours: 6.7, start: "22:10", end: "04:50" },
+        { date: "06/11", hours: 7.4, start: "22:00", end: "05:30" },
+        { date: "07/11", hours: 5.9, start: "23:20", end: "05:10" },
+        { date: "08/11", hours: 6.3, start: "22:15", end: "04:45" },
+        ],
+    };
+    setSleepData(dummy);
+    if (dummy.chart.length > 0) {
+        setSelectedData(dummy.chart[dummy.chart.length - 1]);
+    }
     setLoading(false);
     }, 1000);
 }, []);
+
+useEffect(() => {
+    if (sleepData && sleepData.chart.length > 0 && scrollViewRef.current) {
+    setTimeout(() => {
+        scrollViewRef.current.scrollToEnd({ animated: false });
+    }, 200);
+    }
+}, [sleepData]);
 
 if (loading) {
     return (
@@ -36,143 +64,116 @@ if (!sleepData) {
     );
 }
 
-const parseDuration = (duration) => {
-    const match = duration.match(/(\d+)j\s+(\d+)m/);
-    if (!match) return 0;
-    const hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
-    return hours + minutes / 60;
+const formatFullDate = (dateStr) => {
+    const [day, month] = dateStr.split("/");
+    const months = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+    ];
+    return `${parseInt(day, 10)} ${months[parseInt(month, 10) - 1]} 2025`;
 };
 
+const getSleepMessage = (hours) => {
+    if (hours < 6) return "Rentang waktu tidur kurang dari yang disarankan.";
+    if (hours >= 6 && hours <= 8)
+    return "Tidur Anda berada pada rentang yang disarankan.";
+    return "Tidur Anda berlebihan, coba kurangi sedikit.";
+};
 
-const sleepHours = parseDuration(sleepData.duration); //nanti ini dibuat dua message, satu untuk durasi, satu untuk kualitas
-let sleepMessage = "";
-    if (sleepHours < 6) {
-    sleepMessage = "Rentang waktu tidur kurang dari yang disarankan.";
-    } else if (sleepHours >= 6 && sleepHours <= 8) {
-    sleepMessage = "Tidur Anda berada pada rentang yang disarankan.";
-    } else {
-    sleepMessage = "Tidur Anda berlebihan, coba kurangi sedikit.";
-    }
-let sleepQuality = parseInt(sleepData.quality);
-    if (sleepHours < 6) {
-    sleepMessage = "Rentang waktu tidur kurang dari yang disarankan.";
-    } else if (sleepHours >= 6 && sleepHours <= 8) {
-    sleepMessage = "Tidur Anda berada pada rentang yang disarankan.";
-    } else {
-    sleepMessage = "Tidur Anda berlebihan, coba kurangi sedikit.";
-    }
-
-
+const sleepMessage = selectedData
+    ? getSleepMessage(selectedData.hours)
+    : "Belum ada data untuk ditampilkan.";
 
 return (
-    <ScrollView style={styles.container}>
-    {/* Chart Placeholder */}
-    <View style={styles.chartBox}>
-        <Text style={styles.sectionTitle}>Pelacakan Tidur</Text>
-        {/* Nanti ganti pakai BarChart atau LineChart */}
-        <View style={styles.chartPlaceholder}>
-        {sleepData.chart.map((val, idx) => (
-            <View key={idx} style={[styles.bar, { height: val * 10 }]} />
+    <Container>
+    {/* Grafik Tidur */}
+    <Card title="Grafik Pelacakan Tidur">
+        <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={true}
+        contentContainerStyle={[
+            styles.chartScroll,
+            { width: sleepData.chart.length * 55 },
+        ]}
+        >
+        {sleepData.chart.map((item, idx) => (
+            <TouchableOpacity
+            key={idx}
+            style={styles.barContainer}
+            onPress={() => setSelectedData(item)}
+            activeOpacity={0.7}
+            >
+            <View
+                style={[
+                styles.bar,
+                {
+                    height: item.hours * 10,
+                    backgroundColor:
+                    selectedData?.date === item.date ? "#041062" : "#534DD9",
+                },
+                ]}
+            />
+            <Text style={styles.barLabel}>{item.date}</Text>
+            <Text style={styles.barHours}>{item.hours.toFixed(1)}j</Text>
+            </TouchableOpacity>
         ))}
-        </View>
-    </View>
+        </ScrollView>
+    </Card>
 
     {/* Durasi Tidur */}
-    <View style={styles.card}>
-        <Text style={styles.cardTitle}>Durasi Tidur</Text>
-        <Text style={styles.duration}>{sleepData.duration}</Text>
+    <Card title={`Durasi Tidur (${formatFullDate(selectedData.date)})`}>
+        <Text style={styles.duration}>{selectedData.hours.toFixed(1)} jam</Text>
         <Text style={styles.subText}>
-        {sleepData.start} - {sleepData.end}
+        {selectedData.start} - {selectedData.end}
         </Text>
-        <Text style={styles.subText}>
-        {sleepMessage}
-        </Text>
-    </View>
+        <Text style={styles.subText}>{sleepMessage}</Text>
+    </Card>
 
-    {/* Kualitas Tidur */}
-    <View style={styles.card}>
-        <Text style={styles.cardTitle}>Kualitas Tidur</Text>
-        <Text style={styles.subText}>
-        {sleepData.start} - {sleepData.end}
-        </Text>
-        <View style={styles.qualityRow}>
-        {[1, 2, 3, 4, 5].map((q) => (
-            <View
-            key={q}
-            style={[
-                styles.qualityBox,
-                { backgroundColor: q <= sleepData.quality ? "#534DD9" : "#ddd" },
-            ]}
-            />
-        ))}
-        </View>
-        <Text style={styles.subText}> 
-            Anda tidur selama {sleepData.duration}. {sleepMessage}
-        </Text>
-    </View>
-
-    {/* Tips */}
-    <View style={styles.card}>
-        <Text style={styles.cardTitle}>Tips Meningkatkan Kualitas Tidur</Text>
-        {/* <Text style={styles.subText}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. */}
-        {/* </Text> */}
+    {/* Tips Tidur */}
+    <Card title="Tips Meningkatkan Kualitas Tidur">
         <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("Tips Tidur")}
-        >AQW2
+        >
         <Text style={styles.buttonText}>Lihat Tips</Text>
         </TouchableOpacity>
-    </View>
-    </ScrollView>
+    </Card>
+    </Container>
 );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#EFECFE", padding: 16 },
-    center: { flex: 1, justifyContent: "center", alignItems: "center" },
-    noDataText: { fontSize: 16, color: "#999" },
-    chartBox: { marginBottom: 16 },
-    chartPlaceholder: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-end",
-        marginTop: 12,
-        height: 120,
-    },
-    bar: {
-        width: 20,
-        borderRadius: 6,
-        backgroundColor: "#534DD9",
-    },
-    sectionTitle: { fontSize: 18, fontWeight: "600", color: "#041062" },
-    card: {
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    cardTitle: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
-    duration: { fontSize: 28, fontWeight: "700", color: "#041062" },
-    subText: { fontSize: 14, color: "#555", marginTop: 4 },
-    qualityRow: { flexDirection: "row", marginVertical: 8 },
-    qualityBox: {
-        width: 40,
-        height: 12,
-        marginRight: 4,
-        borderRadius: 4,
-    },
-    button: {
-        marginTop: 12,
-        backgroundColor: "#534DD9",
-        padding: 12,
-        borderRadius: 8,
-        alignItems: "center",
-    },
-    buttonText: { color: "#fff", fontWeight: "600" },
+center: { flex: 1, justifyContent: "center", alignItems: "center" },
+noDataText: { fontSize: 14, color: "#777", textAlign: "center", marginTop: 12 },
+chartScroll: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingVertical: 12,
+    paddingHorizontal: 90,
+},
+barContainer: { alignItems: "center", marginHorizontal: 6, width: 45 },
+bar: { width: 30, marginVertical: 4, borderRadius: 6 },
+barLabel: { fontSize: 12, color: "#333", marginTop: 4 },
+barHours: { fontSize: 11, color: "#777" },
+duration: { fontSize: 28, fontWeight: "700", color: "#041062" },
+subText: { fontSize: 14, color: "#555", marginTop: 4 },
+button: {
+    marginTop: 12,
+    backgroundColor: "#534DD9",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+},
+buttonText: { color: "#fff", fontWeight: "600" },
 });

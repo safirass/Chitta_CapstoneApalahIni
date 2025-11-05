@@ -7,12 +7,13 @@ export default function TipsStresScreen() {
             <View style={styles.card}>
                 <Text style={styles.title}>Tips Mengurangi Stres</Text>
                 <Image
-                    source={require('../../assets/tidur.png')} 
+                    source={require('../../assets/stres.jpg')} 
                     style={styles.image} 
                 />
                 <Text style={styles.desc}>
                     Berikut beberapa tips untuk membantu Anda mendapatkan tidur yang lebih baik:
                 </Text>
+                
             </View>
         </ScrollView>
 
@@ -50,9 +51,9 @@ const styles = StyleSheet.create({
     },
     image: {
         width: '100%',
-        height: 200,
+        height: 300,
         borderRadius: 12,
-        marginBottom: 12,
+        margin: 0,
     },
     desc: {
         fontSize: 13,

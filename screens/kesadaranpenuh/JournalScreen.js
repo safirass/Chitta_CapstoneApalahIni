@@ -9,7 +9,13 @@ const Stack = createNativeStackNavigator();
 
 export default function JournalScreen() {
 return (
-    <Stack.Navigator>
+    <Stack.Navigator
+            screenOptions={{
+            headerStyle: { backgroundColor: '#F3EFFF' }, 
+            headerTintColor: '#000', 
+            headerTitleStyle: { fontWeight: 'bold' }, 
+        }}
+    >
     <Stack.Screen 
         name="JournalList" 
         component={JournalListScreen} 

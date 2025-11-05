@@ -1,141 +1,138 @@
 // screens/HomeScreen.js
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import Container from "../components/container";
+import Card from "../components/card";
 
 export default function HomeScreen() {
 const navigation = useNavigation();
+const [profileData, setProfileData] = useState({
+    nama: "WARGA UNDIP", //pokoknya ini nanti buat nama user dari database
+    foto: null,
+});
+const [greeting, setGreeting] = useState("");
+
+useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 11) setGreeting("Selamat Pagi");
+    else if (hour >= 11 && hour < 15) setGreeting("Selamat Siang");
+    else if (hour >= 15 && hour < 18) setGreeting("Selamat Sore");
+    else setGreeting("Selamat Malam");
+}, []);
 
 return (
-    <ScrollView style={styles.container}>
+    <Container>
     {/* Header */}
-    <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-        <Image style={styles.avatar}
-        source={require('../assets/nafas.png')}  //ini nanti ikutin api
+    <TouchableOpacity
+        style={styles.header}
+        onPress={() => navigation.navigate("Profile")}
+    >
+        <Image
+        style={styles.avatar}
+        source={
+            profileData.foto
+            ? { uri: profileData.foto }
+            : require("../assets/person.png")
+        }
         />
         <View>
-        <Text style={styles.greeting}>Selamat Pagi</Text>
-        <Text style={styles.name}>Luffy</Text> 
+        <Text style={styles.greeting}>{greeting}</Text>
+        <Text style={styles.name}>{profileData.nama}</Text>
         </View>
-        </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
 
     {/* Chat AI */}
-    <View style={styles.card}>
-        <Text style={styles.cardTitle}>Mulai Mengobrol dengan Chat AI</Text>
-        <Text style={styles.cardDesc}>
-            Asisten AI kami yang akan selalu menemanimu
-        </Text>
-        <TouchableOpacity style={styles.button} onAccessibilityAction={() => navigation.navigate("Konsultasi")}>
-            <Text style={styles.buttonText}>Mengobrol dengan Chat AI</Text>
+    <Card
+        title="Mulai Mengobrol dengan Chat AI"
+        description="Asisten AI kami yang akan selalu menemanimu"
+        type="info"
+    >
+        <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("Konsultasi")}
+        >
+        <Text style={styles.buttonText}>Mengobrol dengan Chat AI</Text>
         </TouchableOpacity>
-    </View>
+    </Card>
 
     {/* Kesadaran Penuh */}
     <TouchableOpacity
-        style={styles.card}
         onPress={() => navigation.navigate("Kesadaran Penuh")}
     >
-        <Text style={styles.cardTitle}>Kesadaran Penuh</Text>
-        <Text style={styles.cardDesc}>
-        Ruang untuk kamu fokus, menulis jurnal dan merasakan ketenangan
-        </Text>
+        <Card
+        title="Kesadaran Penuh"
+        description="Ruang untuk kamu fokus, menulis jurnal, dan merasakan ketenangan"
+        />
     </TouchableOpacity>
 
     {/* Pemantauan Tingkat Stres */}
     <TouchableOpacity
-        style={styles.card}
         onPress={() => navigation.navigate("Pemantauan Stres")}
     >
-        <Text style={styles.cardTitle}>Pemantauan Tingkat Stres</Text>
-        <Text style={styles.cardDesc}>Pantau Level Stres Kamu</Text>
+        <Card
+        title="Pemantauan Tingkat Stres"
+        description="Pantau level stres kamu setiap hari"
+        />
     </TouchableOpacity>
 
-    {/* Pelacakan Tidur //kalau ga memungkinkan nanti ini dihapus */} 
+    {/* Pelacakan Tidur */}
     <TouchableOpacity
-        style={styles.card}
         onPress={() => navigation.navigate("Pelacakan Tidur")}
     >
-        <Text style={styles.cardTitle}>Pelacakan Tidur</Text>
-        <Text style={styles.cardDesc}>Pantau durasi dan kualitas tidurmu</Text>
+        <Card
+        title="Pelacakan Tidur"
+        description="Pantau durasi dan kualitas tidurmu"
+        />
     </TouchableOpacity>
 
     {/* Pemantauan Mahasiswa */}
     <TouchableOpacity
-        style={styles.card}
         onPress={() => navigation.navigate("Pemantauan Mahasiswa")}
     >
-        <Text style={styles.cardTitle}>Pemantauan Mahasiswa</Text>
-        <Text style={styles.cardDesc}>
-        Tempat kamu mendeteksi gangguan kesehatan mental (kecemasan, depresi
-        dan stres)
-        </Text>
+        <Card
+        title="Pemantauan Mahasiswa"
+        description="Deteksi kesehatan mental (kecemasan, depresi, stres)"
+        />
     </TouchableOpacity>
 
     {/* Info UPT */}
-    <View style={styles.card}>
-        <Text style={styles.cardTitle}>UPT LKDPDEM</Text>
-        <Text style={styles.cardDesc}>
-            [UPT Layanan Konsultasi, Disabilitas, Penegakan Disiplin, dan Etika
-            Mahasiswa UNDIP]
-        </Text>
+    <Card
+        title="UPT LKDPDEM"
+        description="[UPT Layanan Konsultasi, Disabilitas, Penegakan Disiplin, dan Etika Mahasiswa UNDIP]"
+    >
         <Text style={styles.cardDesc}>Hotline: 0811-2500-5757</Text>
         <Text style={styles.cardDesc}>Email: upt.yanmas@undip.id</Text>
         <Text style={styles.cardDesc}>linktr.ee/undip.studentcare</Text>
-    </View>
-    </ScrollView>
+    </Card>
+    </Container>
 );
 }
 
 const styles = StyleSheet.create({
-container: {
-    flex: 1,
-    backgroundColor: "#F3EFFF",
-    padding: 15,
-    marginTop: 25,
-},
 header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 25,
+    marginTop: 35,
 },
 avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 15,
 },
 greeting: {
-    fontSize: 14,
-    color: "#555",
+    fontSize: 15,
+    color: "#666",
 },
 name: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-},
-card: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    elevation: 2,
-},
-cardTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-},
-cardDesc: {
-    fontSize: 13,
-    color: "#555",
+    color: "#000",
 },
 button: {
-    backgroundColor: "#7A5AF5",
+    backgroundColor: "#534DD9",
     padding: 10,
     borderRadius: 8,
     marginTop: 10,
@@ -144,5 +141,9 @@ button: {
 buttonText: {
     color: "#fff",
     fontWeight: "bold",
+},
+cardDesc: {
+    fontSize: 13,
+    color: "#555",
 },
 });

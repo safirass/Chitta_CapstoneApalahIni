@@ -27,7 +27,7 @@ return (
         Baru?{" "}
         <Text
         style={styles.link}
-        onPress={() => navigation.navigate("Register")} // arahkan ke halaman Register
+        onPress={() => navigation.navigate("Register")}
         >
         daftar sekarang
         </Text>

@@ -1,90 +1,77 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import Container from "../components/container";
+import Card from "../components/card";
 
-const Profile = () => {
+const ProfileScreen = ({ navigation, setIsLoggedIn }) => {
+const [profileData] = useState({
+    nama: "Warga Undip",
+    nim: "21120122140xxx",
+    jurusan: "Teknik Komputer",
+    fakultas: "Teknik",
+    semester: "7",
+    jenisKelamin: "-",
+    foto: null,
+});
+
 return (
-    <View style={styles.container}>
-    <View style={styles.profileContainer}>
+    <Container>
+    <Card>
+        <View style={styles.profileContainer}>
         <Image
-        style={styles.profileImage}
-        source={require('../assets/tidur.png')}  // Ganti dengan URL gambar dari backend?
+            style={styles.profileImage}
+            source={
+            profileData.foto
+                ? { uri: profileData.foto }
+                : require("../assets/person.png")
+            }
         />
-    </View>
+        </View>
 
-    {/* pokoknya enih nanti sesuaiin ama backendnya */}
-    <View style={styles.infoContainer}> 
+        <View style={styles.infoContainer}>
         <Text style={styles.label}>Nama</Text>
-        <Text style={styles.value}>Monkey D Luffy</Text>   
-        <Text style={styles.label}>NIM</Text>
-        <Text style={styles.value}>2112021240147</Text>
-        <Text style={styles.label}>Jurusan</Text>
-        <Text style={styles.value}>Teknik Komputer</Text>
-        <Text style={styles.label}>Fakultas</Text>
-        <Text style={styles.value}>Teknik</Text>
-        <Text style={styles.label}>Semester</Text>
-        <Text style={styles.value}>6</Text>
-        <Text style={styles.label}>Jenis Kelamin</Text>
-        <Text style={styles.value}>Laki-laki</Text>
-    </View>
-    
-    <TouchableOpacity style={styles.logoutButton}>
-        <Text style={styles.logoutText}>→ Logout</Text>
-    </TouchableOpacity>
-    </View>
+        <Text style={styles.value}>{profileData.nama}</Text>
 
+        <Text style={styles.label}>NIM</Text>
+        <Text style={styles.value}>{profileData.nim}</Text>
+
+        <Text style={styles.label}>Jurusan</Text>
+        <Text style={styles.value}>{profileData.jurusan}</Text>
+
+        <Text style={styles.label}>Fakultas</Text>
+        <Text style={styles.value}>{profileData.fakultas}</Text>
+
+        <Text style={styles.label}>Semester</Text>
+        <Text style={styles.value}>{profileData.semester}</Text>
+
+        <Text style={styles.label}>Jenis Kelamin</Text>
+        <Text style={styles.value}>{profileData.jenisKelamin}</Text>
+        </View>
+
+        <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={() => setIsLoggedIn(false)}
+        >
+        <Text style={styles.logoutText}>→ Logout</Text>
+        </TouchableOpacity>
+    </Card>
+    </Container>
 );
 };
 
 const styles = StyleSheet.create({
-container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    padding: 10,
-},
-header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-},
-backButton: {
-    fontSize: 24,
-},
-title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-},
-profileContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-},
+profileContainer: { alignItems: "center", marginBottom: 20 },
 profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
+    backgroundColor: "#E0E0E0",
 },
-infoContainer: {
-    backgroundColor: '#FFF',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-},
-label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-},
-value: {
-    fontSize: 16,
-    marginBottom: 10,
-},
-logoutButton: {
-    alignItems: 'flex-end',
-},
-logoutText: {
-    fontSize: 16,
-    color: '#007AFF',
-},
+infoContainer: { marginBottom: 20 },
+label: { fontSize: 16, fontWeight: "bold", marginBottom: 5 },
+value: { fontSize: 16, marginBottom: 10, color: "#555" },
+logoutButton: { alignItems: "flex-end" },
+logoutText: { fontSize: 16, color: "#007AFF" },
 });
 
-export default Profile;
+export default ProfileScreen;

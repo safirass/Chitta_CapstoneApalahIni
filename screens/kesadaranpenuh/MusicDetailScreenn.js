@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
@@ -8,40 +8,55 @@ const { track } = route.params;
 const [sound, setSound] = useState(null);
 const [isPlaying, setIsPlaying] = useState(false);
 
-const playPause = async () => {
+useEffect(() => {
+    // Bersihkan audio saat keluar halaman
+    return () => {
     if (sound) {
-    if (isPlaying) {
+        sound.unloadAsync();
+    }
+    };
+}, [sound]);
+
+const playPause = async () => {
+    try {
+    if (sound) {
+        if (isPlaying) {
         await sound.pauseAsync();
         setIsPlaying(false);
-    } else {
+        } else {
         await sound.playAsync();
         setIsPlaying(true);
-    }
+        }
     } else {
-    const { sound: newSound } = await Audio.Sound.createAsync({
-        uri: track.preview_url, // Spotify preview 30 detik
-    });
-    setSound(newSound);
-    await newSound.playAsync();
-    setIsPlaying(true);
+        const { sound: newSound } = await Audio.Sound.createAsync({
+        uri: track.musicUrl,
+        });
+        setSound(newSound);
+        await newSound.playAsync();
+        setIsPlaying(true);
+    }
+    } catch (error) {
+    console.error("Error playing sound:", error);
     }
 };
 
 return (
     <View style={styles.container}>
-    <TouchableOpacity
-        style={styles.back}
-        onPress={() => navigation.goBack()}
-    >
+    <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={28} color="#333" />
     </TouchableOpacity>
 
     <Image
-        source={{ uri: track.album.images[0].url }}
+        source={{
+        uri:
+            track.imageUrl ??
+            "https://via.placeholder.com/300x300.png?text=No+Image",
+        }}
         style={styles.album}
     />
-    <Text style={styles.name}>{track.name}</Text>
-    <Text style={styles.artist}>{track.artists[0].name}</Text>
+
+    <Text style={styles.name}>{track.title}</Text>
+    <Text style={styles.artist}>Musik Relaksasi</Text>
 
     <TouchableOpacity style={styles.playBtn} onPress={playPause}>
         <Ionicons
@@ -58,7 +73,7 @@ const styles = StyleSheet.create({
 container: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: "#EAE9FF",
+    backgroundColor: "#F3EFFF",
     paddingTop: 40,
 },
 back: {

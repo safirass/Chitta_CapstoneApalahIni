@@ -7,7 +7,7 @@ export default function TipsTidurScreen() {
             <View style={styles.card}>
                 <Text style={styles.title}>Tips Tidur</Text>
                 <Image
-                    source={require('../../assets/tidur.png')} 
+                    source={require('../../assets/tidur.jpg')} 
                     style={styles.image} 
                 />
                 <Text style={styles.desc}>

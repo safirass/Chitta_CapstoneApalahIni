@@ -1,25 +1,76 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
-
-const questions = [
-"Soal 1",
-"Soal 2",
-"Soal 3",
-"Soal 4",
-];
+import React, { useState, useEffect } from "react";
+import {
+View,
+Text,
+TouchableOpacity,
+ScrollView,
+StyleSheet,
+ActivityIndicator,
+Alert,
+} from "react-native";
 
 const options = ["TS", "AS", "S", "SS"];
 
 export default function IsiPemantauanScreen() {
+const [questions, setQuestions] = useState([]);
 const [answers, setAnswers] = useState({});
+const [loading, setLoading] = useState(false);
+const [result, setResult] = useState(null);
 
-const handleSelect = (qIndex, option) => {
-    setAnswers({ ...answers, [qIndex]: option });
+// Ganti sesuai endpoint server-mu (misal localhost:8000 atau domain deploy)
+const API_BASE_URL = "http://10.0.2.2:8000/api"; // untuk emulator Android
+// kalau pakai HP fisik: ganti ke IP laptop kamu (misal "http://192.168.1.7:8000/api")
+
+useEffect(() => {
+    // contoh dummy fetch pertanyaan (sementara kalau belum ada endpoint khusus)
+    // nanti bisa diganti GET /screening/questions
+    const dummyQuestions = [
+    { code: "G01", text: "Saya merasa sedih tanpa alasan jelas." },
+    { code: "G02", text: "Saya sulit merasa rileks." },
+    { code: "G03", text: "Saya mudah cemas terhadap hal kecil." },
+    { code: "G04", text: "Saya kehilangan minat terhadap hal-hal yang dulu menyenangkan." },
+    ];
+    setQuestions(dummyQuestions);
+}, []);
+
+const handleSelect = (code, option) => {
+    setAnswers({ ...answers, [code]: option });
+};
+
+const handleSubmit = async () => {
+    // pastikan semua pertanyaan terjawab
+    if (Object.keys(answers).length < questions.length) {
+    Alert.alert("Peringatan", "Silakan jawab semua pertanyaan terlebih dahulu.");
+    return;
+    }
+
+    setLoading(true);
+    try {
+    const response = await fetch(`${API_BASE_URL}/screening`, {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ jawaban: answers }),
+    });
+
+    if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || "Gagal memproses data");
+    }
+
+    const data = await response.json();
+    setResult(data);
+    } catch (error) {
+    Alert.alert("Terjadi Kesalahan", error.message);
+    } finally {
+    setLoading(false);
+    }
 };
 
 return (
     <ScrollView style={styles.container}>
-    <Text style={styles.title}>Pemantauan Mahasiswa</Text>
+
     <View style={styles.infoBox}>
         <Text style={styles.infoTitle}>Bagaimana Perasaan Anda Selama Satu Minggu Terakhir?</Text>
         <Text style={styles.infoText}>
@@ -36,23 +87,23 @@ return (
         </Text>
     </View>
 
-    {questions.map((q, qIndex) => (
-        <View key={qIndex} style={styles.questionBox}>
-        <Text style={styles.questionText}>{q}</Text>
+    {questions.map((q) => (
+        <View key={q.code} style={styles.questionBox}>
+        <Text style={styles.questionText}>{q.text}</Text>
         <View style={styles.optionRow}>
             {options.map((option) => (
             <TouchableOpacity
                 key={option}
                 style={[
                 styles.optionButton,
-                answers[qIndex] === option && styles.selectedOption,
+                answers[q.code] === option && styles.selectedOption,
                 ]}
-                onPress={() => handleSelect(qIndex, option)}
+                onPress={() => handleSelect(q.code, option)}
             >
                 <Text
                 style={[
                     styles.optionText,
-                    answers[qIndex] === option && styles.selectedText,
+                    answers[q.code] === option && styles.selectedText,
                 ]}
                 >
                 {option}
@@ -63,11 +114,28 @@ return (
         </View>
     ))}
 
-
-    {/* ini nanti submitnya nyesuaiin ama api yang dibikin mila */}
-    <TouchableOpacity style={styles.submitButton}>
+    {loading ? (
+        <ActivityIndicator size="large" color="#534DD9" style={{ marginVertical: 20 }} />
+    ) : (
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitText}>SUBMIT</Text>
-    </TouchableOpacity>
+        </TouchableOpacity>
+    )}
+
+    {/* hasil screening */}
+    {result && (
+        <View style={styles.resultBox}>
+        <Text style={styles.resultTitle}>Hasil Pemantauan</Text>
+        {Object.entries(result).map(([kategori, detail]) => (
+            <View key={kategori} style={styles.resultItem}>
+            <Text style={styles.resultCategory}>
+                {kategori}: <Text style={{ color: "#534DD9" }}>{detail.kategori}</Text>
+            </Text>
+            <Text style={styles.resultText}>{detail.keterangan}</Text>
+            </View>
+        ))}
+        </View>
+    )}
     </ScrollView>
 );
 }
@@ -75,7 +143,7 @@ return (
 const styles = StyleSheet.create({
 container: {
     flex: 1,
-    backgroundColor: "#f3f0ff",
+    backgroundColor: "#F3EFFF",
     padding: 16,
 },
 title: {
@@ -142,10 +210,38 @@ submitButton: {
     borderRadius: 12,
     alignItems: "center",
     marginTop: 20,
+    marginBottom: 40,
 },
 submitText: {
     color: "#fff",
     fontWeight: "700",
     fontSize: 16,
+},
+resultBox: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 24,
+    marginBottom: 30,
+},
+resultTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#041062",
+    marginBottom: 10,
+},
+resultItem: {
+    marginBottom: 10,
+},
+resultCategory: {
+    fontWeight: "700",
+    color: "#041062",
+    fontSize: 15,
+    marginBottom: 4,
+},
+resultText: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 6,
 },
 });

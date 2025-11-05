@@ -1,78 +1,163 @@
 import React, { useEffect, useState } from "react";
 import {
-View,
-Text,
-FlatList,
-TouchableOpacity,
-Image,
-StyleSheet,
-ActivityIndicator,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Animated,
 } from "react-native";
-
-import { getSpotifyToken, getRelaxationMusic } from "../../services/spotifyApi";
+import Container from "../../components/container";
+import Card from "../../components/card";
 
 export default function MusicScreen({ navigation }) {
-const [tracks, setTracks] = useState([]);
-const [loading, setLoading] = useState(true);
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchMusic = async () => {
-    const token = await getSpotifyToken();
-    const data = await getRelaxationMusic(token);
-    setTracks(data);
-    setLoading(false);
+      try {
+        const response = await fetch("http://192.168.1.5:5000/api/music");
+        const data = await response.json();
+        setTracks(data);
+      } catch (error) {
+        console.error("Gagal memuat musik:", error);
+      } finally {
+        setTimeout(() => setLoading(false), 1000); // biar skeleton kelihatan sebentar
+      }
     };
+
     fetchMusic();
-}, []);
+  }, []);
 
-if (loading) {
+  if (loading) {
     return (
-    <View style={styles.center}>
-        <ActivityIndicator size="large" color="#6C63FF" />
-    </View>
+      <Container>
+        <Text style={styles.title}>Musik Relaksasi</Text>
+        <SkeletonList />
+      </Container>
     );
-}
+  }
 
-return (
-    <View style={styles.container}>
-    <Text style={styles.title}>Musik Relaksasi</Text>
-
-    <FlatList
+  return (
+    <Container>
+      <Text style={styles.title}>Musik Relaksasi</Text>
+      <FlatList
         data={tracks}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-        <TouchableOpacity
-            style={styles.card}
+          <TouchableOpacity
             onPress={() => navigation.navigate("MusicDetail", { track: item })}
-        >
-            <Image
-            source={{ uri: item.album.images[0]?.url }}
-            style={styles.image}
-            />
-            <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.artist}>{item.artists[0].name}</Text>
-            </View>
-        </TouchableOpacity>
+          >
+            <Card>
+              <View style={styles.row}>
+                <Image
+                  source={{
+                    uri:
+                      item.imageUrl ??
+                      "https://via.placeholder.com/150x150.png?text=No+Image",
+                  }}
+                  style={styles.image}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>{item.title}</Text>
+                  <Text style={styles.artist}>Musik Relaksasi</Text>
+                </View>
+              </View>
+            </Card>
+          </TouchableOpacity>
         )}
-    />
-    </View>
-);
+      />
+    </Container>
+  );
 }
+
+/* 🎨 Skeleton Loading Component */
+const SkeletonList = () => {
+  const fadeAnim = new Animated.Value(0.3);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const placeholders = Array(5).fill(0);
+
+  return (
+    <View>
+      {placeholders.map((_, index) => (
+        <Card key={index}>
+          <Animated.View style={[styles.row, { opacity: fadeAnim }]}>
+            <View style={styles.skeletonImage} />
+            <View style={{ flex: 1 }}>
+              <View style={styles.skeletonLineShort} />
+              <View style={styles.skeletonLine} />
+            </View>
+          </Animated.View>
+        </Card>
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-container: { flex: 1, backgroundColor: "#EEF0FF", padding: 16 },
-center: { flex: 1, alignItems: "center", justifyContent: "center" },
-title: { fontSize: 22, fontWeight: "bold", marginBottom: 16 },
-card: {
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: "#041062",
+  },
+  row: {
     flexDirection: "row",
-    backgroundColor: "#FFF",
-    padding: 10,
-    borderRadius: 12,
-    marginBottom: 10,
     alignItems: "center",
-},
-image: { width: 60, height: 60, borderRadius: 10, marginRight: 12 },
-name: { fontSize: 16, fontWeight: "500" },
-artist: { fontSize: 14, color: "gray" },
+  },
+  image: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 12,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
+  artist: {
+    fontSize: 14,
+    color: "gray",
+  },
+  // Skeleton (wireframe) styles
+  skeletonImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: "#E0E0E0",
+    marginRight: 12,
+  },
+  skeletonLineShort: {
+    width: "60%",
+    height: 14,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  skeletonLine: {
+    width: "40%",
+    height: 12,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 8,
+  },
 });

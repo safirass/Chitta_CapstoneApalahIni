@@ -1,107 +1,133 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
-    StyleSheet,
-    KeyboardAvoidingView,
-    Platform,
-    ActivityIndicator,
+View,
+Text,
+TextInput,
+TouchableOpacity,
+FlatList,
+StyleSheet,
+KeyboardAvoidingView,
+Platform,
+ActivityIndicator,
+Modal,
 } from 'react-native';
 
-// Fungsi untuk membuat dummy response
+// Dummy AI response
 const getDummyAIResponse = (userMessage) => {
 const lowerMessage = userMessage.toLowerCase().trim();
+if (lowerMessage.includes('halo') || lowerMessage.includes('hi')) return 'Halo juga! Apa kabar?';
+if (lowerMessage.includes('apa kabar') || lowerMessage.includes('how are you')) return 'Saya baik, terima kasih! Kamu apa kabar?';
+if (lowerMessage.includes('tidur') || lowerMessage.includes('sleep')) return 'Wah, ngomongin tidur? Sudah cukup istirahat belum?';
+if (lowerMessage.includes('makan') || lowerMessage.includes('food')) return 'Mmm, makanan apa yang kamu suka hari ini?';
+return 'Hmm, menarik! Ceritain lebih banyak dong!';
+};
 
-// Logika sederhana berdasarkan kata kunci
-if (lowerMessage.includes('halo') || lowerMessage.includes('hi')) {
-    return 'Halo juga! Apa kabar?';
-} else if (lowerMessage.includes('apa kabar') || lowerMessage.includes('how are you')) {
-    return 'Saya baik, terima kasih! Kamu apa kabar?';
-} else if (lowerMessage.includes('tidur') || lowerMessage.includes('sleep')) {
-    return 'Wah, ngomongin tidur? Sudah cukup istirahat belum?';
-} else if (lowerMessage.includes('makan') || lowerMessage.includes('food')) {
-    return 'Mmm, makanan apa yang kamu suka hari ini?';
-} else {
-    // Default response jika tidak ada kata kunci yang cocok
-    return 'Hmm, menarik! Ceritain lebih banyak dong!';
-}
+// Dummy history per tanggal
+const dummyHistory = {
+'2025-11-06': [
+    { id: '1', text: 'Halo!', isUser: true, timestamp: new Date('2025-11-06T10:00:00') },
+    { id: '2', text: 'Ada yang bisa dibantu hari ini?', isUser: false, timestamp: new Date('2025-11-06T10:01:00') },
+],
+'2025-11-05': [
+    { id: '3', text: 'Apa kabar?', isUser: true, timestamp: new Date('2025-11-05T09:00:00') },
+    { id: '4', text: 'Saya baik!', isUser: false, timestamp: new Date('2025-11-05T09:01:00') },
+],
 };
 
 const KonsultasiScreen = () => {
-const [messages, setMessages] = useState([]); // Array pesan: [{ id, text, isUser, timestamp }]
+const [messages, setMessages] = useState([
+    { id: 'ai-initial', text: 'Ada yang bisa dibantu hari ini?', isUser: false, timestamp: new Date() },
+]);
 const [inputText, setInputText] = useState('');
 const [isLoading, setIsLoading] = useState(false);
-const flatListRef = useRef(null); // Untuk scroll ke bawah otomatis
+const [showHistory, setShowHistory] = useState(false);
+const [history, setHistory] = useState(dummyHistory);
+const [selectedDate, setSelectedDate] = useState(null);
+const flatListRef = useRef(null);
 
-// Fungsi kirim pesan user
 const sendMessage = () => {
     if (!inputText.trim()) return;
 
-    const userMessage = {
-    id: Date.now().toString(),
-    text: inputText,
-    isUser: true,
-    timestamp: new Date(),
-    };
-
-    // Tambah pesan user ke state
+    const userMessage = { id: Date.now().toString(), text: inputText, isUser: true, timestamp: new Date() };
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
 
-    // Simulasi delay seperti API call
     setTimeout(() => {
-    // Ambil dummy response
-    const aiReply = getDummyAIResponse(userMessage.text);
-
-    // Tambah response AI ke state
-    const aiMessage = {
-        id: (Date.now() + 1).toString(),
-        text: aiReply,
-        isUser: false,
-        timestamp: new Date(),
-    };
-
+    const aiMessage = { id: (Date.now() + 1).toString(), text: getDummyAIResponse(userMessage.text), isUser: false, timestamp: new Date() };
     setMessages(prev => [...prev, aiMessage]);
     setIsLoading(false);
-
-    // Scroll ke bawah setelah update state
     flatListRef.current?.scrollToEnd({ animated: true });
-    }, 1000); // Delay 1 detik untuk simulasi
+
+    // Simpan ke history per tanggal
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    setHistory(prev => {
+        const todayMessages = prev[today] ? [...prev[today], userMessage, aiMessage] : [userMessage, aiMessage];
+        return { ...prev, [today]: todayMessages };
+    });
+    }, 1000);
 };
 
-// Render item pesan (bubble chat)
 const renderMessage = ({ item }) => (
     <View style={[styles.messageContainer, item.isUser ? styles.userMessage : styles.aiMessage]}>
-    <Text style={[styles.messageText, item.isUser ? styles.userText : styles.aiText]}>
-        {item.text}
-    </Text>
-    <Text style={styles.timestamp}>
-        {item.timestamp.toLocaleTimeString()}
-    </Text>
+    <Text style={[styles.messageText, item.isUser ? styles.userText : styles.aiText]}>{item.text}</Text>
+    <Text style={styles.timestamp}>{item.timestamp.toLocaleTimeString()}</Text>
     </View>
 );
+
+// Render chat per tanggal di riwayat
+const renderHistoryMessages = () => {
+    if (!selectedDate || !history[selectedDate] || history[selectedDate].length === 0) {
+    return <Text style={styles.noHistory}>Belum ada pesan pada tanggal ini</Text>;
+    }
+    return (
+    <FlatList
+        data={history[selectedDate]}
+        keyExtractor={item => item.id}
+        renderItem={renderMessage}
+        contentContainerStyle={{ paddingBottom: 10 }}
+    />
+    );
+};
 
 return (
     <KeyboardAvoidingView
     style={styles.container}
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
     >
+    {/* Modal Riwayat */}
+    <Modal visible={showHistory} animationType="slide">
+        <View style={styles.modalContainer}>
+        <Text style={styles.modalTitle}>Riwayat Chat</Text>
+        <FlatList
+            data={Object.keys(history).sort((a,b)=> b.localeCompare(a))} // urut dari terbaru
+            keyExtractor={item => item}
+            renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => setSelectedDate(item)} style={styles.dateButton}>
+                <Text style={styles.dateText}>{item}</Text>
+            </TouchableOpacity>
+            )}
+        />
+        <View style={{ flex: 1, marginTop: 10 }}>
+            {selectedDate && renderHistoryMessages()}
+        </View>
+        <TouchableOpacity onPress={() => setShowHistory(false)} style={styles.closeButton}>
+            <Text style={styles.closeText}>Tutup Riwayat</Text>
+        </TouchableOpacity>
+        </View>
+    </Modal>
+
+    {/* Chat utama */}
     <FlatList
         ref={flatListRef}
         data={messages}
         renderItem={renderMessage}
         keyExtractor={item => item.id}
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        inverted // Balik urutan agar pesan terbaru di bawah
+        contentContainerStyle={{ padding: 10 }}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
     />
-    
-    {/* Loading Indicator jika sedang nunggu AI */}
+
     {isLoading && (
         <View style={styles.loadingContainer}>
         <ActivityIndicator size="small" color="#534DD9" />
@@ -109,18 +135,22 @@ return (
         </View>
     )}
 
-    {/* Input Area */}
-    <View style={styles.inputContainer}>
+    <View style={styles.inputWrapper}>
+        <View style={styles.inputContainer}>
         <TextInput
-        style={styles.input}
-        value={inputText}
-        onChangeText={setInputText}
-        placeholder="Ketik pesan Anda..."
-        multiline
-        maxLength={500}
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Ketik pesan Anda..."
+            multiline
         />
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-        <Text style={styles.sendButtonText}>Kirim</Text>
+            <Text style={styles.sendButtonText}>Kirim</Text>
+        </TouchableOpacity>
+        </View>
+        <Text style={styles.infoText}>AI akan membalas pesanmu dalam 1–2 detik</Text>
+        <TouchableOpacity onPress={() => setShowHistory(true)}>
+        <Text style={[styles.infoText, { color: '#534DD9', marginTop: 5 }]}>Lihat Riwayat Chat</Text>
         </TouchableOpacity>
     </View>
     </KeyboardAvoidingView>
@@ -128,88 +158,29 @@ return (
 };
 
 const styles = StyleSheet.create({
-container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-},
-list: {
-    flex: 1,
-    padding: 10,
-},
-listContent: {
-    paddingBottom: 10,
-},
-messageContainer: {
-    marginVertical: 5,
-    padding: 10,
-    borderRadius: 10,
-    maxWidth: '80%',
-},
-userMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#534DD9',
-},
-aiMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-},
-messageText: {
-    fontSize: 16,
-    color: '#000',
-    marginBottom: 5,
-},
-userText: {
-    color: '#fff',
-},
-aiText: {
-    color: '#333',
-},
-timestamp: {
-    fontSize: 12,
-    color: '#999',
-    alignSelf: 'flex-end',
-},
-loadingContainer: {
-    alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-},
-loadingText: {
-    marginTop: 5,
-    color: '#666',
-},
-inputContainer: {
-    flexDirection: 'row',
-    padding: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-},
-input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    marginRight: 10,
-    fontSize: 16,
-},
-sendButton: {
-    backgroundColor: '#534DD9',
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    justifyContent: 'center',
-},
-sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-},
+container: { flex: 1, backgroundColor: '#f5f5f5' },
+messageContainer: { marginVertical: 5, padding: 10, borderRadius: 10, maxWidth: '80%' },
+userMessage: { alignSelf: 'flex-end', backgroundColor: '#534DD9' },
+aiMessage: { alignSelf: 'flex-start', backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd' },
+messageText: { fontSize: 16, marginBottom: 5 },
+userText: { color: '#fff' },
+aiText: { color: '#333' },
+timestamp: { fontSize: 12, color: '#999', alignSelf: 'flex-end' },
+loadingContainer: { alignItems: 'center', padding: 10, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#ddd' },
+loadingText: { marginTop: 5, color: '#666' },
+inputWrapper: { paddingHorizontal: 10, paddingVertical: 10, paddingBottom: 35, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#ddd' },
+inputContainer: { flexDirection: 'row', alignItems: 'center' },
+input: { flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 20, paddingHorizontal: 15, paddingVertical: Platform.OS === 'ios' ? 12 : 8, fontSize: 16 },
+sendButton: { backgroundColor: '#534DD9', borderRadius: 20, paddingHorizontal: 15, paddingVertical: 10, justifyContent: 'center', marginLeft: 10 },
+sendButtonText: { color: '#fff', fontWeight: 'bold' },
+infoText: { marginTop: 4, fontSize: 12, color: '#888', textAlign: 'center' },
+modalContainer: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
+modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+dateButton: { padding: 10, backgroundColor: '#E9E8FF', marginVertical: 4, borderRadius: 10 },
+dateText: { color: '#041062', fontWeight: '600' },
+closeButton: { marginTop: 20, alignSelf: 'center' },
+closeText: { color: '#534DD9', fontWeight: 'bold' },
+noHistory: { marginTop: 20, textAlign: 'center', fontStyle: 'italic', color: '#888' },
 });
 
 export default KonsultasiScreen;

@@ -1,33 +1,30 @@
-import { useState } from "react"
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, FlatList, Modal } from "react-native"
-import { Picker } from "@react-native-picker/picker"
+import { useState } from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    ScrollView,
+    Alert,
+    Modal,
+    FlatList
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { UNDIP_DATA } from "../../data/FakultasJurusan"; 
 
-// Data Fakultas dan Jurusan UNDIP
-const UNDIP_DATA = {
-"Fakultas Kedokteran": ["Pendidikan Dokter (S1)", "Keperawatan (S1)", "Kebidanan (S1)"],
-"Fakultas Psikologi": ["Psikologi (S1)", "Psikologi Industri dan Organisasi (S1)"],
-"Fakultas Teknik": [
-    "Teknik Sipil (S1)",
-    "Teknik Mesin (S1)",
-    "Teknik Elektro (S1)",
-    "Teknik Kimia (S1)",
-    "Teknik Industri (S1)",
-    "Teknik Lingkungan (S1)",
-    "Teknik Perkapalan (S1)",
-    "Arsitektur (S1)",
-],
-"Fakultas Ekonomika & Bisnis": ["Akuntansi (S1)", "Manajemen (S1)", "Ilmu Ekonomi (S1)"],
-"Fakultas Peternakan & Pertanian": ["Agronomi (S1)", "Peternakan (S1)", "Ilmu dan Teknologi Pangan (S1)"],
-"Fakultas Perikanan & Ilmu Kelautan": ["Perikanan Tangkap (S1)", "Perikanan Budidaya (S1)", "Ilmu Kelautan (S1)"],
-"Fakultas Hukum": ["Ilmu Hukum (S1)"],
-"Fakultas Sains & Matematika": ["Matematika (S1)", "Fisika (S1)", "Kimia (S1)", "Biologi (S1)", "Statistika (S1)"],
-"Fakultas Ilmu Sosial & Ilmu Politik": ["Ilmu Komunikasi (S1)", "Administrasi Publik (S1)", "Ilmu Pemerintahan (S1)"],
-"Fakultas Kesehatan Masyarakat": ["Kesehatan Masyarakat (S1)", "Gizi (S1)"],
-"Fakultas Ilmu Budaya": ["Sastra Indonesia (S1)", "Sastra Inggris (S1)", "Sastra Jawa (S1)", "Sejarah (S1)"],
-}
-
-const SelectionModal = ({ visible, title, items, searchQuery, onSearchChange, onSelectItem, onClose }) => {
-const filteredItems = items.filter((item) => item.toLowerCase().includes(searchQuery.toLowerCase()))
+const SelectionModal = ({
+    visible,
+    title,
+    items,
+    searchQuery,
+    onSearchChange,
+    onSelectItem,
+    onClose
+}) => {
+const filteredItems = items.filter((item) =>
+    item.toLowerCase().includes(searchQuery.toLowerCase())
+);
 
 return (
     <Modal visible={visible} animationType="slide" transparent={false}>
@@ -55,67 +52,82 @@ return (
             <TouchableOpacity
             style={styles.listItem}
             onPress={() => {
-                onSelectItem(item)
-                onClose()
+                onSelectItem(item);
+                onClose();
             }}
             >
             <Text style={styles.listItemText}>{item}</Text>
             </TouchableOpacity>
         )}
-        ListEmptyComponent={<Text style={styles.emptyText}>Tidak ada hasil pencarian</Text>}
+        ListEmptyComponent={
+            <Text style={styles.emptyText}>Tidak ada hasil pencarian</Text>
+        }
         />
     </View>
     </Modal>
-)
-}
+);
+};
 
-export default function RegisterDetailScreen({ navigation = {} }) {
-const [nama, setNama] = useState("")
-const [password, setPassword] = useState("")
-const [ulangiPassword, setUlangiPassword] = useState("")
-const [nim, setNim] = useState("")
-const [fakultas, setFakultas] = useState("")
-const [jurusan, setJurusan] = useState("")
-const [semester, setSemester] = useState("")
-const [gender, setGender] = useState("")
+export default function RegisterDetailScreen({ navigation }) {
+const [nama, setNama] = useState("");
+const [password, setPassword] = useState("");
+const [ulangiPassword, setUlangiPassword] = useState("");
+const [nim, setNim] = useState("");
+const [fakultas, setFakultas] = useState("");
+const [jurusan, setJurusan] = useState("");
+const [semester, setSemester] = useState("");
+const [gender, setGender] = useState("");
 
-// State untuk modal search
-const [fakultasModalVisible, setFakultasModalVisible] = useState(false)
-const [jurusanModalVisible, setJurusanModalVisible] = useState(false)
-const [fakultasSearchQuery, setFakultasSearchQuery] = useState("")
-const [jurusanSearchQuery, setJurusanSearchQuery] = useState("")
+const [fakultasModalVisible, setFakultasModalVisible] = useState(false);
+const [jurusanModalVisible, setJurusanModalVisible] = useState(false);
+const [fakultasSearchQuery, setFakultasSearchQuery] = useState("");
+const [jurusanSearchQuery, setJurusanSearchQuery] = useState("");
 
-const fakultasList = Object.keys(UNDIP_DATA)
-
-// Filter jurusan berdasarkan fakultas yang dipilih
-const jurusanList = fakultas ? UNDIP_DATA[fakultas] || [] : []
+const fakultasList = Object.keys(UNDIP_DATA);
+const jurusanList = fakultas ? UNDIP_DATA[fakultas] || [] : [];
 
 const handleFakultasSelect = (selectedFakultas) => {
-    setFakultas(selectedFakultas)
-    setJurusan("")
-    setJurusanSearchQuery("")
-}
+    setFakultas(selectedFakultas);
+    setJurusan("");
+    setJurusanSearchQuery("");
+};
 
 const handleNext = () => {
-    if (!nama || !password || !ulangiPassword || !nim || !fakultas || !jurusan || !semester || !gender) {
-    Alert.alert("Peringatan", "Harap isi semua data!")
-    return
+    if (
+    !nama ||
+    !password ||
+    !ulangiPassword ||
+    !nim ||
+    !fakultas ||
+    !jurusan ||
+    !semester ||
+    !gender
+    ) {
+    Alert.alert("Peringatan", "Harap isi semua data!");
+    return;
     }
     if (password !== ulangiPassword) {
-    Alert.alert("Peringatan", "Password tidak sama!")
-    return
+    Alert.alert("Peringatan", "Password tidak sama!");
+    return;
     }
-    Alert.alert("Sukses", "Data berhasil disimpan!")
-    navigation.navigate?.("Login")
-}
+    Alert.alert("Sukses", "Data berhasil disimpan!");
+    navigation.navigate("Login");
+};
 
 return (
     <ScrollView contentContainerStyle={styles.container}>
     <Text style={styles.title}>SELESAIKAN PENDAFTARAN</Text>
-    <Text style={styles.subtitle}>Lengkapi data dirimu sebelum melanjutkan.</Text>
+    <Text style={styles.subtitle}>
+        Lengkapi data dirimu sebelum melanjutkan.
+    </Text>
 
     <Text style={styles.label}>Nama Panjang</Text>
-    <TextInput style={styles.input} placeholder="Masukkan nama lengkap" value={nama} onChangeText={setNama} />
+    <TextInput
+        style={styles.input}
+        placeholder="Masukkan nama lengkap"
+        value={nama}
+        onChangeText={setNama}
+    />
 
     <Text style={styles.label}>Buat Password</Text>
     <TextInput
@@ -124,6 +136,7 @@ return (
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        autoCapitalize="none"
     />
 
     <Text style={styles.label}>Ulangi Password</Text>
@@ -133,6 +146,7 @@ return (
         secureTextEntry
         value={ulangiPassword}
         onChangeText={setUlangiPassword}
+        autoCapitalize="none"
     />
 
     <Text style={styles.label}>NIM</Text>
@@ -145,8 +159,13 @@ return (
     />
 
     <Text style={styles.label}>Fakultas</Text>
-    <TouchableOpacity style={styles.searchButton} onPress={() => setFakultasModalVisible(true)}>
-        <Text style={styles.searchButtonText}>{fakultas || "Pilih Fakultas..."}</Text>
+    <TouchableOpacity
+        style={styles.searchButton}
+        onPress={() => setFakultasModalVisible(true)}
+    >
+        <Text style={styles.searchButtonText}>
+        {fakultas || "Pilih Fakultas..."}
+        </Text>
     </TouchableOpacity>
 
     <SelectionModal
@@ -162,8 +181,13 @@ return (
     <Text style={styles.label}>Jurusan</Text>
     {fakultas ? (
         <>
-        <TouchableOpacity style={styles.searchButton} onPress={() => setJurusanModalVisible(true)}>
-            <Text style={styles.searchButtonText}>{jurusan || "Pilih Jurusan..."}</Text>
+        <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => setJurusanModalVisible(true)}
+        >
+            <Text style={styles.searchButtonText}>
+            {jurusan || "Pilih Jurusan..."}
+            </Text>
         </TouchableOpacity>
 
         <SelectionModal
@@ -173,19 +197,24 @@ return (
             searchQuery={jurusanSearchQuery}
             onSearchChange={setJurusanSearchQuery}
             onSelectItem={(selectedJurusan) => {
-            setJurusan(selectedJurusan)
-            setJurusanSearchQuery("")
+            setJurusan(selectedJurusan);
+            setJurusanSearchQuery("");
             }}
             onClose={() => setJurusanModalVisible(false)}
         />
         </>
     ) : (
-        <Text style={styles.disabledText}>Pilih Fakultas terlebih dahulu</Text>
+        <Text style={styles.disabledText}>
+        Pilih Fakultas terlebih dahulu
+        </Text>
     )}
 
     <Text style={styles.label}>Semester</Text>
     <View style={styles.pickerContainer}>
-        <Picker selectedValue={semester} onValueChange={(val) => setSemester(val)}>
+        <Picker
+        selectedValue={semester}
+        onValueChange={(val) => setSemester(val)}
+        >
         <Picker.Item label="Pilih Semester" value="" />
         {[...Array(12)].map((_, i) => (
             <Picker.Item key={i + 1} label={`${i + 1}`} value={`${i + 1}`} />
@@ -195,9 +224,12 @@ return (
 
     <Text style={styles.label}>Jenis Kelamin</Text>
     <View style={styles.pickerContainer}>
-        <Picker selectedValue={gender} onValueChange={(val) => setGender(val)}>
+        <Picker
+        selectedValue={gender}
+        onValueChange={(val) => setGender(val)}
+        >
         <Picker.Item label="Pilih Jenis Kelamin" value="" />
-        <Picker.Item label="Laki-laki" value="Laki-laki" />
+        <Picker.Item label="Laki‑laki" value="Laki‑laki" />
         <Picker.Item label="Perempuan" value="Perempuan" />
         </Picker>
     </View>
@@ -206,7 +238,7 @@ return (
         <Text style={styles.buttonText}>SELANJUTNYA</Text>
     </TouchableOpacity>
     </ScrollView>
-)
+);
 }
 
 const styles = StyleSheet.create({
@@ -334,4 +366,4 @@ emptyText: {
     color: "#999",
     fontSize: 14,
 },
-})
+});

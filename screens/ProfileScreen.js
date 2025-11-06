@@ -16,7 +16,8 @@ const [profileData] = useState({
 
 return (
     <Container>
-    <Card>
+    <Card 
+    type="info">
         <View style={styles.profileContainer}>
         <Image
             style={styles.profileImage}

@@ -21,7 +21,7 @@ const handleRegister = () => {
     } else {
     Alert.alert("Sukses", `Akun dengan email ${email} berhasil didaftarkan!`);
     console.log("Email SSO:", email);
-    navigation.navigate("Login");
+    navigation.navigate("RegisterDetail", { email });
     }
 };
 
@@ -48,10 +48,10 @@ return (
         </Text>
 
         {/* Input Email */}
-        <Text style={styles.label}>Email SSO</Text>
+        <Text style={styles.label}>Email</Text>
         <TextInput
         style={styles.input}
-        placeholder="Masukkan Email SSO"
+        placeholder="Masukkan Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -60,7 +60,7 @@ return (
         {/* Tombol Daftar */}
         <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("RegisterDetail")}
+        onPress={handleRegister}
         >
         <Text style={styles.buttonText}>DAFTAR</Text>
         </TouchableOpacity>

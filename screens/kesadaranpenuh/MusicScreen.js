@@ -24,7 +24,7 @@ export default function MusicScreen({ navigation }) {
       } catch (error) {
         console.error("Gagal memuat musik:", error);
       } finally {
-        setTimeout(() => setLoading(false), 1000); // biar skeleton kelihatan sebentar
+        setTimeout(() => setLoading(false), 1000); 
       }
     };
 

@@ -1,98 +1,70 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import Container from "../components/container";
+import Card from "../components/card"; // pastikan path ini benar (../components/card.js)
 
 export default function KesadaranPenuhScreen({ navigation }) {
 return (
-    <ScrollView style={styles.container}>
-
-    {/* Card 1 */}
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Music')}>
-        <View style={styles.textContainer}>
-        <Text style={styles.title}>Dengarkan Musik Relaksasi</Text>
-        <Text style={styles.desc}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris
-            elementum aliquam facilisis.
-        </Text>
-        </View>
-        <Image 
-        source={ require ('../assets/musik.png')}
-        style={styles.image}
-        />
-    </TouchableOpacity>
-
-    {/* Card 2 */}
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Breathing')}>
-        <View style={styles.textContainer}>
+    <Container>
+    <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate("Breathing")}>
+        <Card style={styles.card} type="info">
+        <Image source={require("../assets/nafas.png")} style={styles.image} />
         <Text style={styles.title}>Atur Pernapasan</Text>
         <Text style={styles.desc}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris
-            elementum aliquam facilisis.
+            Latih pernapasan agar lebih tenang dan teratur. Fitur ini membantu Anda fokus pada
+            irama napas untuk menenangkan pikiran dan mengurangi stres.
         </Text>
-        </View>
-        <Image
-        source={ require ('../assets/nafas.png')}
-        style={styles.image}
-
-        />
+        </Card>
     </TouchableOpacity>
 
-    {/* Card 3 */}
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Journal')}>
-        <View style={styles.textContainer}>
+    <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate("Journal")}>
+        <Card style={styles.card} type="info">
+        <Image source={require("../assets/jurnal.png")} style={styles.image} />
         <Text style={styles.title}>Jurnal</Text>
         <Text style={styles.desc}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris
-            elementum aliquam facilisis.
+            Catat perasaan dan pengalaman harian Anda. Menulis jurnal membantu mengenali emosi,
+            mengelola stres, dan meningkatkan kesadaran diri.
         </Text>
-        </View>
-        <Image
-        source={ require ('../assets/jurnal.png')}
-        style={styles.image}
-        />
+        </Card>
     </TouchableOpacity>
-    </ScrollView>
+
+    <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate("Music")}>
+        <Card style={styles.card} type="info">
+        <Image source={require("../assets/musik.png")} style={styles.image} />
+        <Text style={styles.title}>Dengarkan Musik Relaksasi</Text>
+        <Text style={styles.desc}>
+            Nikmati musik relaksasi yang menenangkan untuk membantu Anda beristirahat,
+            mengurangi kecemasan, dan memulihkan fokus setelah beraktivitas.
+        </Text>
+        </Card>
+    </TouchableOpacity>
+    </Container>
 );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F3EFFF',
-        padding: 16,
-    },
-    header: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 16,
-    },
-    card: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 6,
-        elevation: 3,
-    },
-    textContainer: {
-        flex: 1,
-        paddingRight: 10,
-    },
-    title: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 6,
-    },
-    desc: {
-        fontSize: 13,
-        color: '#666',
-    },
-    image: {
-        width: 70,
-        height: 70,
-    },
-});7
+card: {
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+},
+image: {
+    width: 80,
+    height: 80,
+    resizeMode: "contain",
+    marginBottom: 10,
+    alignSelf: "center",
+},
+title: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#041062",
+    textAlign: "center",
+    marginBottom: 6,
+},
+desc: {
+    fontSize: 13,
+    color: "#555",
+    textAlign: "center",
+},
+});

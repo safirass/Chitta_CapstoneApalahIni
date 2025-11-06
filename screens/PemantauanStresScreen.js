@@ -1,227 +1,218 @@
-import React, { useEffect, useState, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
-import Container from "../components/container";
-import Card from "../components/card";
+"use client"
 
+import { useEffect, useState, useRef } from "react"
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native"
+import Container from "../components/container"
+import Card from "../components/card"
+
+const screenWidth = Dimensions.get("window").width
+
+// === Data Dummy per jam ===
 const dummyStressData = [
-{ date: "2025-01-01", level: 2 },
-{ date: "2025-01-02", level: 3 },
-{ date: "2025-01-03", level: 1 },
-{ date: "2025-01-04", level: 2 },
-{ date: "2025-01-05", level: 2 },
-{ date: "2025-01-06", level: 3 },
-{ date: "2025-01-07", level: 1 },
-{ date: "2025-01-08", level: 2 },
-{ date: "2025-01-09", level: 2 },
-{ date: "2025-01-10", level: 3 },
-{ date: "2025-01-11", level: 2 },
-{ date: "2025-01-12", level: 1 },
-];
+{
+    date: "2025-11-01",
+    hourly: [
+    { hour: "08:00", stressed: false },
+    { hour: "09:00", stressed: true },
+    { hour: "10:00", stressed: false },
+    { hour: "11:00", stressed: true },
+    { hour: "12:00", stressed: false },
+    ],
+},
+{
+    date: "2025-11-02",
+    hourly: [
+    { hour: "08:00", stressed: false },
+    { hour: "09:00", stressed: false },
+    { hour: "10:00", stressed: true },
+    ],
+},
+{
+    date: "2025-11-03",
+    hourly: [
+    { hour: "08:00", stressed: true },
+    { hour: "09:00", stressed: true },
+    { hour: "10:00", stressed: false },
+    ],
+},
+]
+
+const getStatusDescription = (stressed) => (stressed ? "Stres" : "Relax")
 
 export default function PemantauanStresScreen({ navigation }) {
-const [selectedDate, setSelectedDate] = useState(dummyStressData[dummyStressData.length - 1]?.date);
-const [selectedData, setSelectedData] = useState(null);
-const scrollRef = useRef(null);
-const screenWidth = Dimensions.get("window").width;
+const [selectedDate, setSelectedDate] = useState(dummyStressData[dummyStressData.length - 1]?.date)
+const [selectedData, setSelectedData] = useState(dummyStressData[dummyStressData.length - 1] || null)
+const scrollRef = useRef(null)
+const dateScrollRef = useRef(null)
+
+// Update selectedData saat tanggal berubah
+useEffect(() => {
+    const data = dummyStressData.find((d) => d.date === selectedDate)
+    setSelectedData(data || null)
+}, [selectedDate])
 
 useEffect(() => {
-    const data = dummyStressData.find((item) => item.date === selectedDate);
-    setSelectedData(data);
-}, [selectedDate]);
-
-// scroll otomatis ke kanan
-useEffect(() => {
-    if (scrollRef.current && dummyStressData.length > 0) {
+    if (dateScrollRef.current) {
     setTimeout(() => {
-        scrollRef.current.scrollToEnd({ animated: true });
-    }, 100);
+        dateScrollRef.current.scrollToEnd({ animated: true })
+    }, 100)
     }
-}, []);
+}, [])
 
-const getLevelDescription = (level) => {
-    if (level === 1) return "Rendah";
-    if (level === 2) return "Sedang";
-    if (level === 3) return "Tinggi";
-};
-
-const formatDate = (dateString) => {
-    const options = { day: "2-digit", month: "short" };
-    const date = new Date(dateString);
-    return date.toLocaleDateString("id-ID", options);
-};
+useEffect(() => {
+    if (scrollRef.current && selectedData?.hourly?.length > 0) {
+    setTimeout(() => {
+        scrollRef.current.scrollToEnd({ animated: true })
+    }, 100)
+    }
+}, [selectedData])
 
 return (
     <Container>
-    <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Grafik Pemantauan Stres</Text>
-
-        <Card style={styles.graphWrapper}>
-        {dummyStressData.length > 0 ? (
-            <ScrollView
-            ref={scrollRef}
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
+        <View style={styles.dateContainer}>
+        <ScrollView
             horizontal
+            ref={dateScrollRef}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[
-                styles.graphScrollContainer,
-                {
-                minWidth: Math.max(screenWidth - 60, dummyStressData.length * 50),
-                justifyContent: dummyStressData.length < 7 ? "flex-end" : "flex-start",
-                },
-            ]}
-            >
+            contentContainerStyle={styles.dateScrollContent}
+        >
             {dummyStressData.map((item, index) => (
-                <View key={index} style={styles.barContainer}>
-                <Text style={styles.levelLabel}>{getLevelDescription(item.level)}</Text>
-
-                <TouchableOpacity
-                    onPress={() => setSelectedDate(item.date)}
-                    style={[
-                    styles.bar,
-                    {
-                        height: item.level * 35 + 20,
-                        backgroundColor:
-                        item.level === 1
-                            ? "#FFD93D"
-                            : item.level === 2
-                            ? "#FFB302"
-                            : "#E74C3C",
-                        borderWidth: item.date === selectedDate ? 2 : 0,
-                        borderColor: item.date === selectedDate ? "#041062" : "transparent",
-                    },
-                    ]}
-                />
-
-                <Text style={styles.dateLabel}>{formatDate(item.date)}</Text>
-                </View>
+            <TouchableOpacity
+                key={index}
+                style={[styles.dateButton, selectedDate === item.date && styles.dateButtonActive]}
+                onPress={() => setSelectedDate(item.date)}
+            >
+                <Text style={[styles.dateText, selectedDate === item.date && styles.dateTextActive]}>
+                {new Date(item.date).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "short",
+                })}
+                </Text>
+            </TouchableOpacity>
             ))}
-            </ScrollView>
-        ) : (
-            <View style={styles.emptyGraphContainer}>
-            <Text style={styles.emptyText}>Belum ada data pemantauan stres.</Text>
-            </View>
-        )}
-        </Card>
+        </ScrollView>
+        </View>
 
         {selectedData && (
+        <Card style={styles.graphCard} type="info">
+            <Text style={styles.title}>Riwayat Stres (Tanggal)</Text>
+            <ScrollView
+            horizontal
+            ref={scrollRef}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.barRowContainer}
+            >
+            <View style={styles.barRow}>
+                {selectedData.hourly.map((item, idx) => {
+                const barHeight = item.stressed ? 70 : 40
+                return (
+                    <View key={idx} style={styles.barContainer}>
+                    <Text style={styles.levelLabel}>{getStatusDescription(item.stressed)}</Text>
+                    <View
+                        style={[
+                        styles.bar,
+                        {
+                            height: barHeight,
+                            backgroundColor: item.stressed ? "#E74C3C" : "#2ECC71",
+                        },
+                        ]}
+                    />
+                    <Text style={styles.hourLabel}>{item.hour}</Text>
+                    </View>
+                )
+                })}
+            </View>
+            </ScrollView>
+        </Card>
+        )}
+
+        {selectedData?.hourly && (
         <Card>
-            <Text style={styles.dateText}>
-            {new Date(selectedData.date).toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-            })}
+            {selectedData.hourly.map((item, idx) => (
+            <Text key={idx} style={styles.descText}>
+                {item.hour}: {getStatusDescription(item.stressed)}{" "}
+                {item.stressed
+                ? "- Kamu sedang mengalami stres. Istirahat sejenak dan pertimbangkan berbicara dengan konselor."
+                : "- Kondisimu baik! Pertahankan rutinitas positif."}
             </Text>
-            <Text style={styles.levelText}>
-            Tingkat stres kamu hari ini pada level {selectedData.level},{" "}
-            yaitu{" "}
-            <Text style={{ fontWeight: "600" }}>
-                {getLevelDescription(selectedData.level)}
-            </Text>
-            .
-            </Text>
-            <Text style={styles.desc}>
-            {selectedData.level === 1
-                ? "Kondisimu baik! Pertahankan rutinitas positif seperti tidur cukup dan olahraga ringan."
-                : selectedData.level === 2
-                ? "Kamu berada di level sedang. Coba luangkan waktu untuk relaksasi dan mindfulness."
-                : "Kamu sedang mengalami stres tinggi. Istirahat sejenak, dan pertimbangkan berbicara dengan konselor."}
-            </Text>
+            ))}
         </Card>
         )}
 
         <Card style={styles.linkCard}>
         <TouchableOpacity onPress={() => navigation.navigate("Kesadaran Penuh")}>
             <Text style={styles.linkTitle}>Kesadaran Penuh {">"}</Text>
-            <Text style={styles.linkDesc}>
-            Ruang untuk kamu fokus, menulis jurnal, dan merasakan ketenangan.
-            </Text>
+            <Text style={styles.linkDesc}>Ruang untuk kamu fokus, menulis jurnal, dan merasakan ketenangan.</Text>
         </TouchableOpacity>
         </Card>
 
         <Card style={styles.linkCard}>
         <TouchableOpacity onPress={() => navigation.navigate("Tips Stres")}>
             <Text style={styles.linkTitle}>Tips Mengatasi Stres {">"}</Text>
-            <Text style={styles.linkDesc}>
-            Dapatkan tips dan saran untuk mengelola stres dengan lebih baik.
-            </Text>
+            <Text style={styles.linkDesc}>Dapatkan tips dan saran untuk mengelola stres dengan lebih baik.</Text>
         </TouchableOpacity>
         </Card>
     </ScrollView>
     </Container>
-);
+)
 }
 
 const styles = StyleSheet.create({
+dateContainer: {
+    marginBottom: 15,
+    paddingHorizontal: 0,
+},
+dateScrollContent: {
+    flexGrow: 1,
+    justifyContent: "flex-end",
+    paddingHorizontal: 10,
+},
+dateButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    backgroundColor: "#E9E8FF",
+},
+dateButtonActive: { backgroundColor: "#534DD9" },
+dateText: { color: "#041062", fontWeight: "500", fontSize: 12 },
+dateTextActive: { color: "#fff", fontWeight: "600" },
+graphCard: { paddingVertical: 20, marginBottom: 20 },
 title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#041062",
-    marginBottom: 16,
+    marginBottom: 15,
     textAlign: "center",
 },
-graphWrapper: {
-    paddingVertical: 20,
-    marginBottom: 25,
+barRowContainer: {
+    flexGrow: 1,
+    justifyContent: "flex-end",
 },
-graphScrollContainer: {
+barRow: {
     flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "flex-end",
     paddingHorizontal: 10,
 },
-barContainer: {
-    alignItems: "center",
-    marginHorizontal: 10,
-},
+barContainer: { alignItems: "center", marginHorizontal: 8 },
 levelLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: "#555",
     marginBottom: 4,
+    textAlign: "center",
+    fontWeight: "500",
 },
-bar: {
-    width: 25,
-    borderRadius: 10,
-},
-dateLabel: {
-    marginTop: 6,
-    fontSize: 11,
+hourLabel: {
+    fontSize: 10,
     color: "#041062",
-},
-emptyGraphContainer: {
-    height: 140,
-    justifyContent: "center",
-    alignItems: "center",
-},
-emptyText: {
-    fontSize: 13,
-    color: "#777",
-    fontStyle: "italic",
-},
-dateText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#041062",
-    marginBottom: 8,
-},
-levelText: {
-    fontSize: 14,
-    color: "#000",
-    marginBottom: 10,
-},
-desc: {
-    fontSize: 13,
-    color: "#555",
-},
-linkCard: {
-    marginBottom: 15,
-},
-linkTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#041062",
-},
-linkDesc: {
-    fontSize: 13,
-    color: "#555",
     marginTop: 4,
+    fontWeight: "600",
 },
-});
+bar: { width: 24, borderRadius: 5, marginBottom: 4 },
+descText: { fontSize: 13, color: "#555", marginBottom: 8, lineHeight: 18 },
+linkCard: { marginBottom: 15 },
+linkTitle: { fontSize: 16, fontWeight: "600", color: "#041062" },
+linkDesc: { fontSize: 13, color: "#555", marginTop: 4, lineHeight: 18 },
+})

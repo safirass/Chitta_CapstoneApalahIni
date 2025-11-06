@@ -11,10 +11,6 @@ style,
 }) {
 const getBorderColor = () => {
     switch (type) {
-    case "success":
-        return "#27AE60"; // hijau
-    case "warning":
-        return "#E74C3C"; // merah
     case "info":
         return "#534DD9"; // ungu
     default:

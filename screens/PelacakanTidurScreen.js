@@ -97,7 +97,7 @@ const sleepMessage = selectedData
 return (
     <Container>
     {/* Grafik Tidur */}
-    <Card title="Grafik Pelacakan Tidur">
+    <Card title="Grafik Pelacakan Tidur" type="info">
         <ScrollView
         ref={scrollViewRef}
         horizontal

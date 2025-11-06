@@ -157,7 +157,7 @@ return (
         </ScrollView>
 
         {/* === Grafik === */}
-        <Card title={`Grafik Pemantauan ${selectedMonth}`}>
+        <Card title={`Grafik Pemantauan ${selectedMonth}`} type="info">
         {isEmpty ? (
             <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>

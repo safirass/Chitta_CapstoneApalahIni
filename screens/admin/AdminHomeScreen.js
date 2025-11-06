@@ -1,166 +1,77 @@
-import React from "react";
-import {
-View,
-Text,
-StyleSheet,
-ScrollView,
-Image,
-TouchableOpacity,
-} from "react-native";
+"use client"
 
-export default function AdminHomeScreen({ navigation }) {
-// Contoh data (nanti bisa diganti dari API/backend)
-const riwayatStres = []; // Kosong untuk contoh
-const daftarMahasiswa = []; // Kosong juga untuk contoh
+import { useEffect, useState } from "react"
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
+import { useNavigation } from "@react-navigation/native"
+import Container from "../../components/container"
+import Card from "../../components/card"
+
+export default function AdminHomeScreen() {
+const navigation = useNavigation()
+const [profileData, setProfileData] = useState({
+    nama: "Admin Undip", // Dari database
+    foto: null,
+})
+const [greeting, setGreeting] = useState("")
+
+useEffect(() => {
+    const hour = new Date().getHours()
+    if (hour >= 5 && hour < 11) setGreeting("Selamat Pagi")
+    else if (hour >= 11 && hour < 15) setGreeting("Selamat Siang")
+    else if (hour >= 15 && hour < 18) setGreeting("Selamat Sore")
+    else setGreeting("Selamat Malam")
+}, [])
 
 return (
-    <ScrollView style={styles.container}>
+    <Container>
     {/* Header */}
-    <View style={styles.header}>
+    <TouchableOpacity style={styles.header} onPress={() => navigation.navigate("Profile Admin")}>
         <Image
-        source={{
-            uri: "https://i.pinimg.com/564x/22/1c/26/221c26b45a5a9bb79cc50da2b01a7b76.jpg",
-        }}
         style={styles.avatar}
+        source={profileData.foto ? { uri: profileData.foto } : require("../../assets/person.png")}
         />
         <View>
-        <Text style={styles.greeting}>Selamat Pagi</Text>
-        <Text style={styles.role}>Admin</Text>
+        <Text style={styles.greeting}>{greeting}</Text>
+        <Text style={styles.name}>{profileData.nama}</Text>
         </View>
-    </View>
-
-    {/* Riwayat Stres Tinggi */}
-    <View style={styles.card}>
-        <Text style={styles.cardTitle}>Riwayat Stres Tinggi</Text>
-
-        <View style={styles.tableHeader}>
-        <Text style={[styles.tableText, styles.bold]}>Nama</Text>
-        <Text style={[styles.tableText, styles.bold]}>Tanggal</Text>
-        </View>
-
-        {riwayatStres.length === 0 ? (
-        <Text style={styles.emptyText}>Belum ada data riwayat stres tinggi</Text>
-        ) : (
-        riwayatStres.map((item, index) => (
-            <View key={index} style={styles.tableRow}>
-            <Text style={styles.tableText}>{item.nama}</Text>
-            <Text style={styles.tableText}>{item.tanggal}</Text>
-            </View>
-        ))
-        )}
-
-        <TouchableOpacity
-        style={styles.moreButton}
-        onPress={() => navigation.navigate("RiwayatStres")}
-        >
-        <Text style={styles.moreText}>Lebih banyak ➜</Text>
-        </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
 
     {/* Daftar Mahasiswa */}
-    <View style={styles.card}>
-        <Text style={styles.cardTitle}>Daftar Mahasiswa</Text>
+    <TouchableOpacity onPress={() => navigation.navigate("Daftar Mahasiswa")}>
+        <Card title="Daftar Mahasiswa" description="Lihat data lengkap semua mahasiswa dan detail monitoring mereka" />
+    </TouchableOpacity>
 
-        <View style={styles.tableHeader}>
-        <Text style={[styles.tableText, styles.bold]}>Nama</Text>
-        <Text style={[styles.tableText, styles.bold]}>Semester</Text>
-        </View>
-
-        {daftarMahasiswa.length === 0 ? (
-        <Text style={styles.emptyText}>Belum ada data mahasiswa</Text>
-        ) : (
-        daftarMahasiswa.map((item, index) => (
-            <View key={index} style={styles.tableRow}>
-            <Text style={styles.tableText}>{item.nama}</Text>
-            <Text style={styles.tableText}>{item.semester}</Text>
-            </View>
-        ))
-        )}
-
-        <TouchableOpacity
-        style={styles.moreButton}
-        onPress={() => navigation.navigate("DaftarMahasiswa")}
-        >
-        <Text style={styles.moreText}>Lebih banyak ➜</Text>
-        </TouchableOpacity>
-    </View>
-    </ScrollView>
-);
+    {/* Riwayat Pemantauan Mahasiswa */}
+    <TouchableOpacity onPress={() => navigation.navigate("Riwayat Pemantauan")}>
+        <Card
+        title="Riwayat Pemantauan Mahasiswa"
+        description="Cek riwayat pemantauan kesehatan mental seluruh mahasiswa"
+        />
+    </TouchableOpacity>
+    </Container>
+)
 }
 
 const styles = StyleSheet.create({
-container: {
-    flex: 1,
-    backgroundColor: "#111",
-    paddingHorizontal: 16,
-    paddingTop: 40,
-},
 header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
-    backgroundColor: "#EAE6FF",
-    borderRadius: 12,
-    padding: 12,
+    marginBottom: 25,
+    marginTop: 35,
 },
 avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 15,
 },
 greeting: {
-    fontSize: 16,
+    fontSize: 15,
+    color: "#666",
+},
+name: {
+    fontSize: 20,
+    fontWeight: "bold",
     color: "#000",
 },
-role: {
-    fontSize: 14,
-    color: "#555",
-},
-card: {
-    backgroundColor: "#F8F7FF",
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 20,
-},
-cardTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: "#000",
-},
-tableHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    paddingBottom: 6,
-    marginBottom: 6,
-},
-tableRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 4,
-},
-tableText: {
-    color: "#333",
-    fontSize: 14,
-},
-bold: {
-    fontWeight: "bold",
-},
-moreButton: {
-    marginTop: 8,
-    alignSelf: "flex-end",
-},
-moreText: {
-    color: "#777",
-    fontSize: 13,
-},
-emptyText: {
-    color: "#888",
-    fontStyle: "italic",
-    textAlign: "center",
-    marginVertical: 10,
-},
-});
+})

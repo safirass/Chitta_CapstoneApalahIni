@@ -1,3 +1,11 @@
+/**
+ * The `AddEditJournalScreen` function in React Native allows users to add or edit journal entries with
+ * a title, content, and optional image selection.
+ * @returns The `AddEditJournalScreen` component is being returned. It contains a form for adding or
+ * editing a journal entry. The user can input a title, content, and optionally add an image. The
+ * current date is displayed at the top of the form. There is a button to pick an image from the
+ * device's library, input fields for title and content, and a button to save the journal entry
+ */
 import React, { useState } from "react";
 import {
   View,
@@ -114,6 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#ccc",
+    color: "#000",
   },
   inputContent: {
     backgroundColor: "#fff",
@@ -123,6 +132,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     borderWidth: 1,
     borderColor: "#ccc",
+    color: "#000",
   },
 
   saveButton: {

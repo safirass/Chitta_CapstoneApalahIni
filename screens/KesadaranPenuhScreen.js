@@ -64,7 +64,7 @@ title: {
 },
 desc: {
     fontSize: 13,
-    color: "#555",
+    color: "#000",
     textAlign: "center",
 },
 });

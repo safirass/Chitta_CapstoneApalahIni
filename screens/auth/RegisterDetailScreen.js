@@ -273,6 +273,7 @@ input: {
     padding: 10,
     backgroundColor: "#fff",
     marginBottom: 10,
+    color: "#000",
 },
 pickerContainer: {
     borderWidth: 1,
@@ -280,6 +281,7 @@ pickerContainer: {
     borderRadius: 10,
     backgroundColor: "#fff",
     marginBottom: 10,
+    color: "#000",
 },
 searchButton: {
     borderWidth: 1,

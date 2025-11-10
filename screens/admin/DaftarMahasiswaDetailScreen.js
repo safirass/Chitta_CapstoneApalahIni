@@ -1,17 +1,45 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput } from "react-native"
+import {
+View,
+Text,
+StyleSheet,
+ScrollView,
+TouchableOpacity,
+Modal,
+TextInput,
+FlatList,
+} from "react-native"
 import Container from "../../components/container"
 import Card from "../../components/card"
 import { UNDIP_DATA } from "../../data/FakultasJurusan"
 
-// Data dummy mahasiswa
 const DUMMY_MAHASISWA = [
 {
     id: "1",
-    nama: "Budi Santoso",
-    nim: "21120122140001",
+    nama: "Safira Septiandika Salsabila",
+    nim: "21120122140147",
+    fakultas: "Fakultas Teknik",
+    jurusan: "Teknik Komputer",
+    semester: "7",
+    jenisKelamin: "Perempuan",
+    foto: null,
+},
+{
+    id: "2",
+    nama: "Syabina Kamila",
+    nim: "21120122140132",
+    fakultas: "Fakultas Teknik",
+    jurusan: "Teknik Komputer",
+    semester: "7",
+    jenisKelamin: "Perempuan",
+    foto: null,
+},
+{
+    id: "3",
+    nama: "Bagaskara Dipowicaksono HP",
+    nim: "21120122140119",
     fakultas: "Fakultas Teknik",
     jurusan: "Teknik Komputer",
     semester: "7",
@@ -19,81 +47,61 @@ const DUMMY_MAHASISWA = [
     foto: null,
 },
 {
-    id: "2",
-    nama: "Siti Nurhaliza",
-    nim: "21120122130002",
-    fakultas: "Fakultas Teknik",
-    jurusan: "Teknik Sipil",
-    semester: "6",
-    jenisKelamin: "Perempuan",
-    foto: null,
-},
-{
-    id: "3",
-    nama: "Ahmad Rizki",
-    nim: "21120122140003",
-    fakultas: "Fakultas Psikologi",
-    jurusan: "Psikologi (S1)",
-    semester: "5",
-    jenisKelamin: "Laki-laki",
-    foto: null,
-},
-{
     id: "4",
-    nama: "Dewi Kusuma",
-    nim: "21120122130004",
+    nama: "Bagus Panggalih",
+    nim: "21120122140106",
     fakultas: "Fakultas Teknik",
-    jurusan: "Teknik Elektro",
+    jurusan: "Teknik Komputer",
     semester: "7",
-    jenisKelamin: "Perempuan",
-    foto: null,
-},
-{
-    id: "5",
-    nama: "Riyanto Wijaya", 
-    nim: "21120122140005",
-    fakultas: "Fakultas Kedokteran",
-    jurusan: "Kedokteran (S1)",
-    semester: "4",
     jenisKelamin: "Laki-laki",
     foto: null,
 },
 ]
 
 export default function DaftarMahasiswaDetailScreen() {
-const [selectedFakultas, setSelectedFakultas] = useState("Fakultas Teknik")
-const [sortBy, setSortBy] = useState("nama") // "nama" atau "nim"
+const [selectedFakultas, setSelectedFakultas] = useState("Pilih Fakultas")
+const [sortBy, setSortBy] = useState("nama")
 const [searchQuery, setSearchQuery] = useState("")
 const [selectedMahasiswa, setSelectedMahasiswa] = useState(null)
 const [modalVisible, setModalVisible] = useState(false)
 
-// Filter dan sort data
+// dropdown fakultas
+const [showDropdown, setShowDropdown] = useState(false)
+const [searchFakultas, setSearchFakultas] = useState("")
+
+const fakultasList = Object.keys(UNDIP_DATA)
+
+// Filter fakultas di dropdown berdasarkan input user
+const filteredFakultasList = useMemo(() => {
+    if (!searchFakultas) return fakultasList
+    return fakultasList.filter((f) =>
+    f.toLowerCase().includes(searchFakultas.toLowerCase())
+    )
+}, [searchFakultas])
+
+// Filter dan urutkan mahasiswa
 const filteredMahasiswa = useMemo(() => {
     let data = DUMMY_MAHASISWA.filter((m) => m.fakultas === selectedFakultas)
 
-    // Search
     if (searchQuery) {
-    data = data.filter((m) => m.nama.toLowerCase().includes(searchQuery.toLowerCase()) || m.nim.includes(searchQuery))
+    data = data.filter(
+        (m) =>
+        m.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.nim.includes(searchQuery)
+    )
     }
 
-    // Sort
     data.sort((a, b) => {
-    if (sortBy === "nama") {
-        return a.nama.localeCompare(b.nama)
-    } else {
-        return a.nim.localeCompare(b.nim)
-    }
+    if (sortBy === "nama") return a.nama.localeCompare(b.nama)
+    else return a.nim.localeCompare(b.nim)
     })
-
     return data
 }, [selectedFakultas, sortBy, searchQuery])
-
-const fakultasList = Object.keys(UNDIP_DATA)
 
 return (
     <Container>
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Search Bar */}
+        {/* Search Mahasiswa */}
         <View style={styles.searchContainer}>
         <TextInput
             style={styles.searchInput}
@@ -104,38 +112,87 @@ return (
         />
         </View>
 
-        {/* Filter Fakultas */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.fakultasSelector}>
-        {fakultasList.map((fakultas) => (
-            <TouchableOpacity
-            key={fakultas}
-            style={[styles.fakultasButton, selectedFakultas === fakultas && styles.fakultasButtonActive]}
-            onPress={() => {
-                setSelectedFakultas(fakultas)
-                setSearchQuery("")
-            }}
-            >
-            <Text style={[styles.fakultasText, selectedFakultas === fakultas && styles.fakultasTextActive]}>
-                {fakultas.replace("Fakultas ", "")}
-            </Text>
-            </TouchableOpacity>
-        ))}
-        </ScrollView>
+        {/* Dropdown Fakultas */}
+        <View style={styles.dropdownContainer}>
+        <TouchableOpacity
+            style={styles.dropdownButton}
+            onPress={() => setShowDropdown(!showDropdown)}
+        >
+            <Text style={styles.dropdownButtonText}>{selectedFakultas}</Text>
+        </TouchableOpacity>
 
-        {/* Sort Options */}
+        {showDropdown && (
+            <View style={styles.dropdownListContainer}>
+            <TextInput
+                style={styles.dropdownSearchInput}
+                placeholder="Cari fakultas..."
+                value={searchFakultas}
+                onChangeText={setSearchFakultas}
+            />
+            <FlatList
+                data={filteredFakultasList}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                    setSelectedFakultas(item)
+                    setShowDropdown(false)
+                    setSearchFakultas("")
+                    }}
+                >
+                    <Text
+                    style={[
+                        styles.dropdownItemText,
+                        item === selectedFakultas && {
+                        color: "#534DD9",
+                        fontWeight: "600",
+                        },
+                    ]}
+                    >
+                    {item}
+                    </Text>
+                </TouchableOpacity>
+                )}
+            />
+            </View>
+        )}
+        </View>
+
+        {/* Sort */}
         <View style={styles.sortContainer}>
         <Text style={styles.sortLabel}>Urutkan:</Text>
         <TouchableOpacity
-            style={[styles.sortButton, sortBy === "nama" && styles.sortButtonActive]}
+            style={[
+            styles.sortButton,
+            sortBy === "nama" && styles.sortButtonActive,
+            ]}
             onPress={() => setSortBy("nama")}
         >
-            <Text style={[styles.sortButtonText, sortBy === "nama" && styles.sortButtonTextActive]}>Nama</Text>
+            <Text
+            style={[
+                styles.sortButtonText,
+                sortBy === "nama" && styles.sortButtonTextActive,
+            ]}
+            >
+            Nama
+            </Text>
         </TouchableOpacity>
         <TouchableOpacity
-            style={[styles.sortButton, sortBy === "nim" && styles.sortButtonActive]}
+            style={[
+            styles.sortButton,
+            sortBy === "nim" && styles.sortButtonActive,
+            ]}
             onPress={() => setSortBy("nim")}
         >
-            <Text style={[styles.sortButtonText, sortBy === "nim" && styles.sortButtonTextActive]}>NIM</Text>
+            <Text
+            style={[
+                styles.sortButtonText,
+                sortBy === "nim" && styles.sortButtonTextActive,
+            ]}
+            >
+            NIM
+            </Text>
         </TouchableOpacity>
         </View>
 
@@ -143,30 +200,33 @@ return (
         <Card title={`${selectedFakultas} (${filteredMahasiswa.length} mahasiswa)`}>
         {filteredMahasiswa.length === 0 ? (
             <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Tidak ada mahasiswa yang ditemukan</Text>
+            <Text style={styles.emptyText}>Tidak ada mahasiswa ditemukan</Text>
             </View>
         ) : (
             <View>
-            {/* Header Tabel */}
             <View style={styles.tableHeader}>
                 <Text style={[styles.tableCell, styles.nameCell]}>Nama</Text>
                 <Text style={[styles.tableCell, styles.nimCell]}>NIM</Text>
                 <Text style={[styles.tableCell, styles.actionCell]}>Aksi</Text>
             </View>
-
-            {/* Isi Tabel */}
-            {filteredMahasiswa.map((mahasiswa) => (
+            {filteredMahasiswa.map((mhs) => (
                 <TouchableOpacity
-                key={mahasiswa.id}
+                key={mhs.id}
                 style={styles.tableRow}
                 onPress={() => {
-                    setSelectedMahasiswa(mahasiswa)
+                    setSelectedMahasiswa(mhs)
                     setModalVisible(true)
                 }}
                 >
-                <Text style={[styles.tableCell, styles.nameCell]}>{mahasiswa.nama}</Text>
-                <Text style={[styles.tableCell, styles.nimCell]}>{mahasiswa.nim}</Text>
-                <Text style={[styles.tableCell, styles.actionCell, styles.actionText]}>Lihat</Text>
+                <Text style={[styles.tableCell, styles.nameCell]}>
+                    {mhs.nama}
+                </Text>
+                <Text style={[styles.tableCell, styles.nimCell]}>{mhs.nim}</Text>
+                <Text
+                    style={[styles.tableCell, styles.actionCell, styles.actionText]}
+                >
+                    Lihat
+                </Text>
                 </TouchableOpacity>
             ))}
             </View>
@@ -174,24 +234,24 @@ return (
         </Card>
     </ScrollView>
 
-    {/* Modal Detail */}
-    <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
+    {/* Modal Detail Mahasiswa */}
+    <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
             {selectedMahasiswa && (
             <ScrollView contentContainerStyle={styles.modalScrollContent}>
-                <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+                >
                 <Text style={styles.closeButtonText}>✕</Text>
                 </TouchableOpacity>
 
                 <Text style={styles.modalTitle}>Detail Mahasiswa</Text>
-
-                {/* Foto */}
                 <View style={styles.fotoContainer}>
                 <View style={[styles.fotoPlaceholder, { backgroundColor: "#E0E0E0" }]} />
                 </View>
 
-                {/* Info Mahasiswa */}
                 <View style={styles.modalInfoContainer}>
                 <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>Nama:</Text>
@@ -215,19 +275,18 @@ return (
                 </View>
                 <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>Jenis Kelamin:</Text>
-                    <Text style={styles.infoValue}>{selectedMahasiswa.jenisKelamin}</Text>
+                    <Text style={styles.infoValue}>
+                    {selectedMahasiswa.jenisKelamin}
+                    </Text>
                 </View>
                 </View>
 
-                {/* Riwayat Pemantauan */}
                 <Card title="Riwayat Pemantauan Terbaru">
                 <View style={styles.historyItem}>
                     <Text style={styles.historyDate}>15 Januari 2025</Text>
-                    <Text style={styles.historyText}>Depresi: Sedang | Kecemasan: Ringan | Stres: Sedang</Text>
-                </View>
-                <View style={styles.historyItem}>
-                    <Text style={styles.historyDate}>10 Januari 2025</Text>
-                    <Text style={styles.historyText}>Depresi: Ringan | Kecemasan: Sedang | Stres: Ringan</Text>
+                    <Text style={styles.historyText}>
+                    Depresi: Sedang | Kecemasan: Ringan | Stres: Sedang
+                    </Text>
                 </View>
                 </Card>
             </ScrollView>
@@ -240,12 +299,8 @@ return (
 }
 
 const styles = StyleSheet.create({
-scrollContainer: {
-    paddingBottom: 30,
-},
-searchContainer: {
-    marginBottom: 15,
-},
+scrollContainer: { paddingBottom: 30 },
+searchContainer: { marginBottom: 15 },
 searchInput: {
     backgroundColor: "#F0F0F0",
     borderRadius: 8,
@@ -254,40 +309,39 @@ searchInput: {
     fontSize: 14,
     color: "#333",
 },
-fakultasSelector: {
-    flexDirection: "row",
-    paddingVertical: 10,
-    marginBottom: 10,
-},
-fakultasButton: {
+// === Dropdown Fakultas ===
+dropdownContainer: { marginBottom: 15 },
+dropdownButton: {
     backgroundColor: "#E9E8FF",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginRight: 8,
+    padding: 10,
+    borderRadius: 8,
 },
-fakultasButtonActive: {
-    backgroundColor: "#534DD9",
+dropdownButtonText: { color: "#041062", fontWeight: "600", fontSize: 14 },
+dropdownListContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    marginTop: 6,
+    maxHeight: 180,
 },
-fakultasText: {
-    color: "#041062",
+dropdownSearchInput: {
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
     fontSize: 13,
-    fontWeight: "500",
+    color: "#333",
 },
-fakultasTextActive: {
-    color: "#fff",
-},
+dropdownItem: { padding: 10 },
+dropdownItemText: { fontSize: 13, color: "#333" },
+
+// === Sort dan tabel tetap ===
 sortContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
 },
-sortLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginRight: 10,
-    color: "#333",
-},
+sortLabel: { fontSize: 14, fontWeight: "600", marginRight: 10, color: "#333" },
 sortButton: {
     backgroundColor: "#E9E8FF",
     paddingVertical: 6,
@@ -295,25 +349,12 @@ sortButton: {
     borderRadius: 6,
     marginRight: 8,
 },
-sortButtonActive: {
-    backgroundColor: "#534DD9",
-},
-sortButtonText: {
-    color: "#041062",
-    fontSize: 13,
-    fontWeight: "500",
-},
-sortButtonTextActive: {
-    color: "#fff",
-},
-emptyContainer: {
-    alignItems: "center",
-    paddingVertical: 30,
-},
-emptyText: {
-    color: "#999",
-    fontSize: 14,
-},
+sortButtonActive: { backgroundColor: "#534DD9" },
+sortButtonText: { color: "#041062", fontSize: 13, fontWeight: "500" },
+sortButtonTextActive: { color: "#fff" },
+
+emptyContainer: { alignItems: "center", paddingVertical: 30 },
+emptyText: { color: "#999", fontSize: 14 },
 tableHeader: {
     flexDirection: "row",
     backgroundColor: "#F0F0F0",
@@ -329,29 +370,15 @@ tableRow: {
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
 },
-tableCell: {
-    fontSize: 13,
-    color: "#333",
-},
-nameCell: {
-    flex: 2,
-},
-nimCell: {
-    flex: 1.5,
-    textAlign: "center",
-},
-actionCell: {
-    flex: 1,
-    textAlign: "center",
-},
-actionText: {
-    color: "#534DD9",
-    fontWeight: "600",
-},
-// Modal Styles
+tableCell: { fontSize: 13, color: "#333" },
+nameCell: { flex: 2 },
+nimCell: { flex: 1.5, textAlign: "center" },
+actionCell: { flex: 1, textAlign: "center" },
+actionText: { color: "#534DD9", fontWeight: "600" },
+
 modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
 },
 modalContent: {
@@ -361,52 +388,16 @@ modalContent: {
     maxHeight: "90%",
     paddingTop: 20,
 },
-modalScrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-},
-closeButton: {
-    alignItems: "flex-end",
-    marginBottom: 10,
-},
-closeButtonText: {
-    fontSize: 24,
-    color: "#999",
-    fontWeight: "bold",
-},
-modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#041062",
-    marginBottom: 15,
-},
-fotoContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-},
-fotoPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-},
-modalInfoContainer: {
-    marginBottom: 20,
-},
-infoRow: {
-    flexDirection: "row",
-    marginBottom: 12,
-},
-infoLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#041062",
-    width: 100,
-},
-infoValue: {
-    fontSize: 14,
-    color: "#555",
-    flex: 1,
-},
+modalScrollContent: { paddingHorizontal: 20, paddingBottom: 30 },
+closeButton: { alignItems: "flex-end", marginBottom: 10 },
+closeButtonText: { fontSize: 24, color: "#999", fontWeight: "bold" },
+modalTitle: { fontSize: 20, fontWeight: "bold", color: "#041062", marginBottom: 15 },
+fotoContainer: { alignItems: "center", marginBottom: 20 },
+fotoPlaceholder: { width: 100, height: 100, borderRadius: 50 },
+modalInfoContainer: { marginBottom: 20 },
+infoRow: { flexDirection: "row", marginBottom: 12 },
+infoLabel: { fontSize: 14, fontWeight: "600", color: "#041062", width: 100 },
+infoValue: { fontSize: 14, color: "#555", flex: 1 },
 historyItem: {
     backgroundColor: "#F4F4FF",
     borderRadius: 8,
@@ -415,13 +406,6 @@ historyItem: {
     borderLeftWidth: 4,
     borderLeftColor: "#534DD9",
 },
-historyDate: {
-    fontWeight: "bold",
-    color: "#041062",
-    marginBottom: 4,
-},
-historyText: {
-    color: "#555",
-    fontSize: 13,
-},
+historyDate: { fontWeight: "bold", color: "#041062", marginBottom: 4 },
+historyText: { color: "#555", fontSize: 13 },
 })

@@ -120,10 +120,11 @@ avatar: {
     height: 60,
     borderRadius: 30,
     marginRight: 15,
+    backgroundColor: "#fff",
 },
 greeting: {
     fontSize: 15,
-    color: "#666",
+    color: "#000",
 },
 name: {
     fontSize: 20,
@@ -143,6 +144,6 @@ buttonText: {
 },
 cardDesc: {
     fontSize: 13,
-    color: "#555",
+    color: "#000",
 },
 });

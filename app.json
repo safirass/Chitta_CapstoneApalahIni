@@ -20,10 +20,16 @@
         "foregroundImage": "./assets/chitta.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.CHITTA"
     },
     "web": {
       "favicon": "./assets/chitta.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f82850bd-03e2-4f88-a9a0-daa76ec51029"
+      }
     }
   }
 }

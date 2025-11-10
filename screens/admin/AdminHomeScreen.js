@@ -10,7 +10,6 @@ export default function AdminHomeScreen() {
 const navigation = useNavigation()
 const [profileData, setProfileData] = useState({
     nama: "Admin Undip", // Dari database
-    foto: null,
 })
 const [greeting, setGreeting] = useState("")
 
@@ -26,10 +25,6 @@ return (
     <Container>
     {/* Header */}
     <TouchableOpacity style={styles.header} onPress={() => navigation.navigate("Profile Admin")}>
-        <Image
-        style={styles.avatar}
-        source={profileData.foto ? { uri: profileData.foto } : require("../../assets/person.png")}
-        />
         <View>
         <Text style={styles.greeting}>{greeting}</Text>
         <Text style={styles.name}>{profileData.nama}</Text>
@@ -58,12 +53,6 @@ header: {
     alignItems: "center",
     marginBottom: 25,
     marginTop: 35,
-},
-avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 15,
 },
 greeting: {
     fontSize: 15,

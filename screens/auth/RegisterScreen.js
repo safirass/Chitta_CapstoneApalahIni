@@ -119,6 +119,7 @@ input: {
     padding: 10,
     marginBottom: 20,
     backgroundColor: "#fff",
+    color: "#000",
 },
 button: {
     backgroundColor: "#5A67D8",

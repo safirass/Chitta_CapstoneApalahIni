@@ -10,7 +10,7 @@ const screenWidth = Dimensions.get("window").width
 // === Data Dummy per jam ===
 const dummyStressData = [
 {
-    date: "2025-11-01",
+    date: "01 November 2025",
     hourly: [
     { hour: "08:00", stressed: false },
     { hour: "09:00", stressed: true },
@@ -20,7 +20,7 @@ const dummyStressData = [
     ],
 },
 {
-    date: "2025-11-02",
+    date: "02 November 2025",
     hourly: [
     { hour: "08:00", stressed: false },
     { hour: "09:00", stressed: false },
@@ -28,7 +28,7 @@ const dummyStressData = [
     ],
 },
 {
-    date: "2025-11-03",
+    date: "03 November 2025",
     hourly: [
     { hour: "08:00", stressed: true },
     { hour: "09:00", stressed: true },
@@ -96,7 +96,7 @@ return (
 
         {selectedData && (
         <Card style={styles.graphCard} type="info">
-            <Text style={styles.title}>Riwayat Stres (Tanggal)</Text>
+            <Text style={styles.title}>Riwayat Stres {selectedDate}</Text>  
             <ScrollView
             horizontal
             ref={scrollRef}

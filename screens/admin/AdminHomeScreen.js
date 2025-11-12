@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import Container from "../../components/container"
 import Card from "../../components/card"
 
-export default function AdminHomeScreen() {
+export default function AdminHomeScreen({ setIsLoggedIn }) {
 const navigation = useNavigation()
 const [profileData, setProfileData] = useState({
     nama: "Admin Undip", // Dari database
@@ -21,10 +21,34 @@ useEffect(() => {
     else setGreeting("Selamat Malam")
 }, [])
 
+const handleLogout = () => {
+    Alert.alert(
+    "Konfirmasi Logout",
+    "Apakah Anda yakin ingin keluar dari akun ini?",
+    [
+        {
+        text: "Batal",
+        style: "cancel",
+        },
+        {
+        text: "Ya, Logout",
+        onPress: () => {
+            setIsLoggedIn(false)
+        },
+        style: "destructive",
+        },
+    ],
+    { cancelable: true }
+    )
+}
+
 return (
     <Container>
     {/* Header */}
-    <TouchableOpacity style={styles.header} onPress={() => navigation.navigate("Profile Admin")}>
+    <TouchableOpacity
+        style={styles.header}
+        onPress={() => navigation.navigate("Profile Admin")}
+    >
         <View>
         <Text style={styles.greeting}>{greeting}</Text>
         <Text style={styles.name}>{profileData.nama}</Text>
@@ -33,7 +57,10 @@ return (
 
     {/* Daftar Mahasiswa */}
     <TouchableOpacity onPress={() => navigation.navigate("Daftar Mahasiswa")}>
-        <Card title="Daftar Mahasiswa" description="Lihat data lengkap semua mahasiswa dan detail monitoring mereka" />
+        <Card
+        title="Daftar Mahasiswa"
+        description="Lihat data lengkap semua mahasiswa dan detail monitoring mereka"
+        />
     </TouchableOpacity>
 
     {/* Riwayat Pemantauan Mahasiswa */}
@@ -42,6 +69,11 @@ return (
         title="Riwayat Pemantauan Mahasiswa"
         description="Cek riwayat pemantauan kesehatan mental seluruh mahasiswa"
         />
+    </TouchableOpacity>
+
+    {/* Tombol Logout */}
+    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>→ Logout</Text>
     </TouchableOpacity>
     </Container>
 )
@@ -62,5 +94,14 @@ name: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#000",
+},
+logoutButton: {
+    marginTop: 30,
+    alignSelf: "flex-end",
+},
+logoutText: {
+    color: "#FF3B30",
+    fontWeight: "bold",
+    fontSize: 16,
 },
 })

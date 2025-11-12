@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import {
+View,
+Text,
+StyleSheet,
+TouchableOpacity,
+Image,
+Linking,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Container from "../components/container";
 import Card from "../components/card";
@@ -7,7 +14,7 @@ import Card from "../components/card";
 export default function HomeScreen() {
 const navigation = useNavigation();
 const [profileData, setProfileData] = useState({
-    nama: "WARGA UNDIP", //pokoknya ini nanti buat nama user dari database
+    nama: "WARGA UNDIP", // nanti diganti dari database
     foto: null,
 });
 const [greeting, setGreeting] = useState("");
@@ -31,8 +38,6 @@ return (
         style={styles.avatar}
         source={
             profileData.foto
-            ? { uri: profileData.foto }
-            : require("../assets/person.png")
         }
         />
         <View>
@@ -56,9 +61,7 @@ return (
     </Card>
 
     {/* Kesadaran Penuh */}
-    <TouchableOpacity
-        onPress={() => navigation.navigate("Kesadaran Penuh")}
-    >
+    <TouchableOpacity onPress={() => navigation.navigate("Kesadaran Penuh")}>
         <Card
         title="Kesadaran Penuh"
         description="Ruang untuk kamu fokus, menulis jurnal, dan merasakan ketenangan"
@@ -66,9 +69,7 @@ return (
     </TouchableOpacity>
 
     {/* Pemantauan Tingkat Stres */}
-    <TouchableOpacity
-        onPress={() => navigation.navigate("Pemantauan Stres")}
-    >
+    <TouchableOpacity onPress={() => navigation.navigate("Pemantauan Stres")}>
         <Card
         title="Pemantauan Tingkat Stres"
         description="Pantau level stres kamu setiap hari"
@@ -76,9 +77,7 @@ return (
     </TouchableOpacity>
 
     {/* Pelacakan Tidur */}
-    <TouchableOpacity
-        onPress={() => navigation.navigate("Pelacakan Tidur")}
-    >
+    <TouchableOpacity onPress={() => navigation.navigate("Pelacakan Tidur")}>
         <Card
         title="Pelacakan Tidur"
         description="Pantau durasi dan kualitas tidurmu"
@@ -101,8 +100,19 @@ return (
         description="[UPT Layanan Konsultasi, Disabilitas, Penegakan Disiplin, dan Etika Mahasiswa UNDIP]"
     >
         <Text style={styles.cardDesc}>Hotline: 0811-2500-5757</Text>
-        <Text style={styles.cardDesc}>Email: upt.yanmas@undip.id</Text>
-        <Text style={styles.cardDesc}>linktr.ee/undip.studentcare</Text>
+        <Text style={styles.cardDesc}>Email: upt.yanmas@undip.ac.id</Text>
+        <TouchableOpacity
+            style={styles.button}
+            onPress={() =>
+            Linking.openURL("https://linktr.ee/undip.studentcare")
+            }
+        >
+            <Text style={styles.buttonText}>UNDIP STUDENT CARE</Text>
+        </TouchableOpacity>
+        <Text style={styles.cardDesc}>
+            Klik tombol di atas untuk mendaftar konseling atau melihat layanan
+            mahasiswa lainnya.
+        </Text>
     </Card>
     </Container>
 );

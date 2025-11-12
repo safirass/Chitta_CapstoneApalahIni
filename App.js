@@ -17,7 +17,7 @@ import TipsTidurScreen from "./screens/tips/TipsTidurScreen"
 import TipsStresScreen from "./screens/tips/TipsStresScreen"
 import IsiPemantauanScreen from "./screens/screening/IsiPemantauanScreen"
 import HasilPemantauanScreen from "./screens/screening/HasilPemantauanScreen"
-
+import MusicDetailScreen from "./screens/kesadaranpenuh/MusicDetailScreen"
 
 import SplashScreen from "./screens/auth/SplashScreen"
 import LoginScreen from "./screens/auth/LoginScreen"
@@ -57,7 +57,10 @@ export default function App() {
         ) : userRole === "admin" ? (
           // ===================== ADMIN ROUTES =====================
           <>
-            <Stack.Screen name="AdminHome" component={AdminHomeScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="AdminHome" options={{ headerShown: false }} >
+              {(props) => <AdminHomeScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+            </Stack.Screen>
+
             <Stack.Screen name="Profile Admin">
               {(props) => <ProfileAdminScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
             </Stack.Screen>
@@ -73,25 +76,27 @@ export default function App() {
         ) : (
           // ===================== MAHASISWA ROUTES =====================
           <>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Stack.Screen
-              name="Profile"
-              children={(props) => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
-              options={{ title: "Profil" }}
-            />
-            <Stack.Screen name="Kesadaran Penuh" component={KesadaranPenuhScreen} />
-            <Stack.Screen name="Pemantauan Mahasiswa" component={PemantauanMahasiswaScreen} />
-            <Stack.Screen name="Isi Pemantauan" component={IsiPemantauanScreen} />
-            <Stack.Screen name="Hasil Pemantauan" component={HasilPemantauanScreen} />
-            <Stack.Screen name="Konsultasi" component={KonsultasiScreen} />
-            <Stack.Screen name="Pelacakan Tidur" component={PelacakanTidurScreen} />
-            <Stack.Screen name="Tips Tidur" component={TipsTidurScreen} />
-            <Stack.Screen name="Pemantauan Stres" component={PemantauanStresScreen} />
-            <Stack.Screen name="Tips Stres" component={TipsStresScreen} />
-            <Stack.Screen name="Music" component={MusicScreen} options={{ title: "Musik Relaksasi" }} />
-            <Stack.Screen name="Breathing" component={BreathingScreen} options={{ title: "Latihan Pernapasan" }} />
-            <Stack.Screen name="Journal" component={JournalScreen} options={{ headerShown: false }} />
-          </>
+          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Profile"
+            children={(props) => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+            options={{ title: "Profil" }}
+          />
+          <Stack.Screen name="Kesadaran Penuh" component={KesadaranPenuhScreen} />
+          <Stack.Screen name="Pemantauan Mahasiswa" component={PemantauanMahasiswaScreen} />
+          <Stack.Screen name="Isi Pemantauan" component={IsiPemantauanScreen} />
+          <Stack.Screen name="Hasil Pemantauan" component={HasilPemantauanScreen} />
+          <Stack.Screen name="Konsultasi" component={KonsultasiScreen} />
+          <Stack.Screen name="Pelacakan Tidur" component={PelacakanTidurScreen} />
+          <Stack.Screen name="Tips Tidur" component={TipsTidurScreen} />
+          <Stack.Screen name="Pemantauan Stres" component={PemantauanStresScreen} />
+          <Stack.Screen name="Tips Stres" component={TipsStresScreen} />
+          <Stack.Screen name="Music" component={MusicScreen} options={{ title: "Musik Relaksasi" }} />
+          <Stack.Screen name="MusicDetail" component={MusicDetailScreen} options={{ title: "Detail Musik", headerShown: false }} />
+          <Stack.Screen name="Breathing" component={BreathingScreen} options={{ title: "Latihan Pernapasan" }} />
+          <Stack.Screen name="Journal" component={JournalScreen} options={{ headerShown: false }} />
+        </>
+
         )}
       </Stack.Navigator>
     </NavigationContainer>

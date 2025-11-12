@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-View,
-Text,
-TextInput,
-TouchableOpacity,
-StyleSheet,
-Image,
-Alert,
-KeyboardAvoidingView,
-Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    Image,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
 ScrollView,
 } from "react-native";
 

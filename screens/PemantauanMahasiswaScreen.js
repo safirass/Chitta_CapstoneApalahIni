@@ -6,6 +6,7 @@ StyleSheet,
 ScrollView,
 TouchableOpacity,
 Dimensions,
+Linking,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Container from "../components/container";
@@ -13,7 +14,6 @@ import Card from "../components/card";
 
 const screenWidth = Dimensions.get("window").width - 30;
 
-// === Data Dummy (simulasi dari Juli 2024) ===
 const riwayatPerBulan = {
 "Januari 2024": [
     { tanggal: "15/7", Depresi: 1, Kecemasan: 2, Stres: 1 },
@@ -33,7 +33,7 @@ const riwayatPerBulan = {
     { tanggal: "01/10", Depresi: 4, Kecemasan: 2, Stres: 4 },
     { tanggal: "08/10", Depresi: 4, Kecemasan: 3, Stres: 3 },
     { tanggal: "15/10", Depresi: 4, Kecemasan: 4, Stres: 4 },
-], 
+],
 };
 
 const levelKeterangan = {
@@ -63,14 +63,13 @@ const monthNames = [
 const allKeys = Object.keys(riwayatData);
 if (allKeys.length === 0) return [];
 
-// ambil bulan & tahun paling awal dari data
 const firstKey = allKeys[0];
 const [firstMonthName, firstYear] = firstKey.split(" ");
 const startMonth = monthNames.indexOf(firstMonthName) + 1;
 const startYear = parseInt(firstYear);
 
 const now = new Date();
-const currentMonth = now.getMonth(); // 0-based
+const currentMonth = now.getMonth();
 const currentYear = now.getFullYear();
 
 const list = [];
@@ -90,14 +89,11 @@ return list;
 
 export default function RiwayatPemantauanScreen({ navigation }) {
 const monthList = useMemo(() => generateMonthListFromData(riwayatPerBulan), []);
-const [selectedMonth, setSelectedMonth] = useState(
-    monthList[monthList.length - 1]
-);
+const [selectedMonth, setSelectedMonth] = useState(monthList[monthList.length - 1]);
 
 const scrollRef = useRef(null);
 
 useEffect(() => {
-    // auto scroll ke kanan (bulan sekarang)
     setTimeout(() => {
     if (scrollRef.current) {
         scrollRef.current.scrollToEnd({ animated: true });
@@ -117,6 +113,10 @@ const chartData = {
 };
 
 const isEmpty = dataBulanIni.length === 0;
+
+const handleOpenLink = () => {
+    Linking.openURL("https://linktr.ee/undip.studentcare");
+};
 
 return (
     <Container>
@@ -166,9 +166,7 @@ return (
             </View>
         ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View
-                style={{ width: Math.max(screenWidth, dataBulanIni.length * 100) }}
-            >
+            <View style={{ width: Math.max(screenWidth, dataBulanIni.length * 100) }}>
                 <LineChart
                 data={chartData}
                 width={Math.max(screenWidth, dataBulanIni.length * 100)}
@@ -217,6 +215,20 @@ return (
             <Text style={styles.bold}>Sangat Berat:</Text> Gangguan fungsi harian,
             butuh psikiater.
         </Text>
+
+        {/* === Tombol Linktree === */}
+        <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() =>
+            Linking.openURL("https://linktr.ee/undip.studentcare")
+            }
+        >
+            <Text style={styles.linkButtonText}>UNDIP Student Care</Text>
+        </TouchableOpacity>
+        <Text style={styles.infoText}>
+            Klik tombol di atas untuk mendaftar konseling atau melihat layanan
+            mahasiswa lainnya.
+        </Text>
         </Card>
 
         {/* === Riwayat === */}
@@ -232,9 +244,7 @@ return (
             <TouchableOpacity
                 key={index}
                 style={styles.historyItem}
-                onPress={() =>
-                navigation.navigate("Hasil Pemantauan", { data: item })
-                }
+                onPress={() => navigation.navigate("Hasil Pemantauan", { data: item })}
             >
                 <Text style={styles.historyDate}>Tanggal: {item.tanggal}</Text>
                 <Text style={styles.historyText}>
@@ -252,9 +262,7 @@ return (
 }
 
 const styles = StyleSheet.create({
-scrollContainer: {
-    paddingBottom: 30,
-},
+scrollContainer: { paddingBottom: 30 },
 button: {
     backgroundColor: "#041062",
     paddingVertical: 12,
@@ -263,12 +271,27 @@ button: {
     alignItems: "center",
     marginBottom: 20,
 },
-buttonText: {
+    linkButton: {
+    backgroundColor: "#534DD9",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+    },
+    linkButtonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16,
-},
-// === Selector Bulan ===
+    fontSize: 14,
+    },
+    infoText: {
+    fontSize: 12,
+    color: "#555",
+    textAlign: "center",
+    marginTop: 6,
+    },
+
+buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 monthSelector: {
     flexDirection: "row",
     alignItems: "center",
@@ -283,47 +306,25 @@ monthButton: {
     borderRadius: 20,
     marginHorizontal: 5,
 },
-monthButtonActive: {
-    backgroundColor: "#534DD9",
-},
-monthText: {
-    color: "#041062",
-    fontSize: 14,
-    fontWeight: "500",
-},
-monthTextActive: {
-    color: "#fff",
-    fontWeight: "bold",
-},
-// === Grafik ===
+monthButtonActive: { backgroundColor: "#534DD9" },
+monthText: { color: "#041062", fontSize: 14, fontWeight: "500" },
+monthTextActive: { color: "#fff", fontWeight: "bold" },
 emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 20,
 },
-emptyText: {
-    color: "#777",
-    fontSize: 14,
-    textAlign: "center",
+emptyText: { color: "#777", fontSize: 14, textAlign: "center" },
+levelNote: { textAlign: "center", fontSize: 12, color: "#555", marginTop: 8 },
+text: { color: "#333", fontSize: 14, marginBottom: 5, lineHeight: 20 },
+bold: { fontWeight: "bold", color: "#041062" },
+link: {
+    color: "#534DD9",
+    textDecorationLine: "underline",
+    marginTop: 10,
+    fontSize: 13,
 },
-levelNote: {
-    textAlign: "center",
-    fontSize: 12,
-    color: "#555",
-    marginTop: 8,
-},
-// === Keterangan ===
-text: {
-    color: "#333",
-    fontSize: 14,
-    marginBottom: 5,
-    lineHeight: 20,
-},
-bold: {
-    fontWeight: "bold",
-    color: "#041062",
-},
-// === Riwayat ===
+infoText: { fontSize: 12, color: "#444", marginTop: 5 },
 historyItem: {
     backgroundColor: "#F4F4FF",
     borderRadius: 10,
@@ -332,13 +333,6 @@ historyItem: {
     borderWidth: 1,
     borderColor: "#E0E0FF",
 },
-historyDate: {
-    fontWeight: "bold",
-    color: "#041062",
-    marginBottom: 4,
-},
-historyText: {
-    color: "#333",
-    fontSize: 13,
-},
+historyDate: { fontWeight: "bold", color: "#041062", marginBottom: 4 },
+historyText: { color: "#333", fontSize: 13 },
 });

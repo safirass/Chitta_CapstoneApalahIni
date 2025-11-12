@@ -1,26 +1,26 @@
 import { useState } from "react";
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    ScrollView,
-    Alert,
-    Modal,
-    FlatList
+View,
+Text,
+TextInput,
+TouchableOpacity,
+StyleSheet,
+Alert,
+Modal,
+FlatList,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { UNDIP_DATA } from "../../data/FakultasJurusan"; 
+import { UNDIP_DATA } from "../../data/FakultasJurusan";
+import Container from "../../components/container"; 
 
 const SelectionModal = ({
-    visible,
-    title,
-    items,
-    searchQuery,
-    onSearchChange,
-    onSelectItem,
-    onClose
+visible,
+title,
+items,
+searchQuery,
+onSearchChange,
+onSelectItem,
+onClose,
 }) => {
 const filteredItems = items.filter((item) =>
     item.toLowerCase().includes(searchQuery.toLowerCase())
@@ -73,6 +73,7 @@ const [nama, setNama] = useState("");
 const [password, setPassword] = useState("");
 const [ulangiPassword, setUlangiPassword] = useState("");
 const [nim, setNim] = useState("");
+const [whatsapp, setWhatsapp] = useState(""); // ✅ tambahan nomor WhatsApp
 const [fakultas, setFakultas] = useState("");
 const [jurusan, setJurusan] = useState("");
 const [semester, setSemester] = useState("");
@@ -98,6 +99,7 @@ const handleNext = () => {
     !password ||
     !ulangiPassword ||
     !nim ||
+    !whatsapp ||
     !fakultas ||
     !jurusan ||
     !semester ||
@@ -115,7 +117,7 @@ const handleNext = () => {
 };
 
 return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Container>
     <Text style={styles.title}>SELESAIKAN PENDAFTARAN</Text>
     <Text style={styles.subtitle}>
         Lengkapi data dirimu sebelum melanjutkan.
@@ -147,6 +149,15 @@ return (
         value={ulangiPassword}
         onChangeText={setUlangiPassword}
         autoCapitalize="none"
+    />
+
+    <Text style={styles.label}>Nomor Telepon/WhatsApp</Text>
+    <TextInput
+        style={styles.input}
+        placeholder="contoh: 6281234567890"
+        keyboardType="phone-pad"
+        value={whatsapp}
+        onChangeText={setWhatsapp}
     />
 
     <Text style={styles.label}>NIM</Text>
@@ -211,10 +222,7 @@ return (
 
     <Text style={styles.label}>Semester</Text>
     <View style={styles.pickerContainer}>
-        <Picker
-        selectedValue={semester}
-        onValueChange={(val) => setSemester(val)}
-        >
+        <Picker selectedValue={semester} onValueChange={(val) => setSemester(val)}>
         <Picker.Item label="Pilih Semester" value="" />
         {[...Array(12)].map((_, i) => (
             <Picker.Item key={i + 1} label={`${i + 1}`} value={`${i + 1}`} />
@@ -224,12 +232,9 @@ return (
 
     <Text style={styles.label}>Jenis Kelamin</Text>
     <View style={styles.pickerContainer}>
-        <Picker
-        selectedValue={gender}
-        onValueChange={(val) => setGender(val)}
-        >
+        <Picker selectedValue={gender} onValueChange={(val) => setGender(val)}>
         <Picker.Item label="Pilih Jenis Kelamin" value="" />
-        <Picker.Item label="Laki‑laki" value="Laki‑laki" />
+        <Picker.Item label="Laki-laki" value="Laki-laki" />
         <Picker.Item label="Perempuan" value="Perempuan" />
         </Picker>
     </View>
@@ -237,7 +242,7 @@ return (
     <TouchableOpacity style={styles.button} onPress={handleNext}>
         <Text style={styles.buttonText}>SELANJUTNYA</Text>
     </TouchableOpacity>
-    </ScrollView>
+    </Container>
 );
 }
 
@@ -273,7 +278,7 @@ input: {
     padding: 10,
     backgroundColor: "#fff",
     marginBottom: 10,
-    color: "#000",
+    color: "#666",
 },
 pickerContainer: {
     borderWidth: 1,

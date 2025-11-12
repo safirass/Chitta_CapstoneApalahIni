@@ -1,77 +1,50 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
 View,
 Text,
 StyleSheet,
-ScrollView,
 TouchableOpacity,
 Modal,
 TextInput,
 FlatList,
+ScrollView,
 } from "react-native"
 import Container from "../../components/container"
 import Card from "../../components/card"
 import { UNDIP_DATA } from "../../data/FakultasJurusan"
-
-const DUMMY_MAHASISWA = [
-{
-    id: "1",
-    nama: "Safira Septiandika Salsabila",
-    nim: "21120122140147",
-    fakultas: "Fakultas Teknik",
-    jurusan: "Teknik Komputer",
-    semester: "7",
-    jenisKelamin: "Perempuan",
-    foto: null,
-},
-{
-    id: "2",
-    nama: "Syabina Kamila",
-    nim: "21120122140132",
-    fakultas: "Fakultas Teknik",
-    jurusan: "Teknik Komputer",
-    semester: "7",
-    jenisKelamin: "Perempuan",
-    foto: null,
-},
-{
-    id: "3",
-    nama: "Bagaskara Dipowicaksono HP",
-    nim: "21120122140119",
-    fakultas: "Fakultas Teknik",
-    jurusan: "Teknik Komputer",
-    semester: "7",
-    jenisKelamin: "Laki-laki",
-    foto: null,
-},
-{
-    id: "4",
-    nama: "Bagus Panggalih",
-    nim: "21120122140106",
-    fakultas: "Fakultas Teknik",
-    jurusan: "Teknik Komputer",
-    semester: "7",
-    jenisKelamin: "Laki-laki",
-    foto: null,
-},
-]
+import API from "../../data/MahasiswaDummy" // ✅ ambil dari file dummy API
 
 export default function DaftarMahasiswaDetailScreen() {
+const [mahasiswaList, setMahasiswaList] = useState([])
+const [loading, setLoading] = useState(true)
+
 const [selectedFakultas, setSelectedFakultas] = useState("Pilih Fakultas")
 const [sortBy, setSortBy] = useState("nama")
 const [searchQuery, setSearchQuery] = useState("")
 const [selectedMahasiswa, setSelectedMahasiswa] = useState(null)
 const [modalVisible, setModalVisible] = useState(false)
-
-// dropdown fakultas
 const [showDropdown, setShowDropdown] = useState(false)
 const [searchFakultas, setSearchFakultas] = useState("")
 
 const fakultasList = Object.keys(UNDIP_DATA)
 
-// Filter fakultas di dropdown berdasarkan input user
+// ✅ Ambil data dari dummy API
+useEffect(() => {
+    const fetchData = async () => {
+    try {
+        const data = await API.getAllMahasiswa()
+        setMahasiswaList(data)
+    } catch (error) {
+        console.error("Gagal memuat data mahasiswa:", error)
+    } finally {
+        setLoading(false)
+    }
+    }
+    fetchData()
+}, [])
+
 const filteredFakultasList = useMemo(() => {
     if (!searchFakultas) return fakultasList
     return fakultasList.filter((f) =>
@@ -79,9 +52,11 @@ const filteredFakultasList = useMemo(() => {
     )
 }, [searchFakultas])
 
-// Filter dan urutkan mahasiswa
 const filteredMahasiswa = useMemo(() => {
-    let data = DUMMY_MAHASISWA.filter((m) => m.fakultas === selectedFakultas)
+    let data = mahasiswaList.filter(
+    (m) =>
+        selectedFakultas === "Pilih Fakultas" || m.fakultas === selectedFakultas
+    )
 
     if (searchQuery) {
     data = data.filter(
@@ -95,13 +70,27 @@ const filteredMahasiswa = useMemo(() => {
     if (sortBy === "nama") return a.nama.localeCompare(b.nama)
     else return a.nim.localeCompare(b.nim)
     })
+
     return data
-}, [selectedFakultas, sortBy, searchQuery])
+}, [mahasiswaList, selectedFakultas, sortBy, searchQuery])
+
+// ✅ Tampilan loading
+if (loading) {
+    return (
+    <Container>
+        <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
+        <Text style={{ color: "#555", fontSize: 16 }}>
+            Memuat data mahasiswa...
+        </Text>
+        </View>
+    </Container>
+    )
+}
 
 return (
-    <Container>
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Search Mahasiswa */}
+    <Container scrollable={false}>
+    <View style={styles.scrollContainer}>
+        {/* Search */}
         <View style={styles.searchContainer}>
         <TextInput
             style={styles.searchInput}
@@ -196,43 +185,49 @@ return (
         </TouchableOpacity>
         </View>
 
-        {/* Tabel Mahasiswa */}
-        <Card title={`${selectedFakultas} (${filteredMahasiswa.length} mahasiswa)`}>
-        {filteredMahasiswa.length === 0 ? (
+        {/* List Mahasiswa */}
+        <Card
+        title={`${
+            selectedFakultas === "Pilih Fakultas"
+            ? "Semua Fakultas"
+            : selectedFakultas
+        } (${filteredMahasiswa.length} mahasiswa)`}
+        >
+        <FlatList
+            data={filteredMahasiswa}
+            keyExtractor={(item) => item.id}
+            scrollEnabled={false}
+            ListEmptyComponent={
             <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Tidak ada mahasiswa ditemukan</Text>
+                <Text style={styles.emptyText}>
+                Tidak ada mahasiswa ditemukan
+                </Text>
             </View>
-        ) : (
-            <View>
-            <View style={styles.tableHeader}>
-                <Text style={[styles.tableCell, styles.nameCell]}>Nama</Text>
-                <Text style={[styles.tableCell, styles.nimCell]}>NIM</Text>
-                <Text style={[styles.tableCell, styles.actionCell]}>Aksi</Text>
-            </View>
-            {filteredMahasiswa.map((mhs) => (
-                <TouchableOpacity
-                key={mhs.id}
+            }
+            renderItem={({ item }) => (
+            <TouchableOpacity
                 style={styles.tableRow}
                 onPress={() => {
-                    setSelectedMahasiswa(mhs)
-                    setModalVisible(true)
+                setSelectedMahasiswa(item)
+                setModalVisible(true)
                 }}
-                >
+            >
                 <Text style={[styles.tableCell, styles.nameCell]}>
-                    {mhs.nama}
+                {item.nama}
                 </Text>
-                <Text style={[styles.tableCell, styles.nimCell]}>{mhs.nim}</Text>
+                <Text style={[styles.tableCell, styles.nimCell]}>
+                {item.nim}
+                </Text>
                 <Text
-                    style={[styles.tableCell, styles.actionCell, styles.actionText]}
+                style={[styles.tableCell, styles.actionCell, styles.actionText]}
                 >
-                    Lihat
+                Lihat
                 </Text>
-                </TouchableOpacity>
-            ))}
-            </View>
-        )}
+            </TouchableOpacity>
+            )}
+        />
         </Card>
-    </ScrollView>
+    </View>
 
     {/* Modal Detail Mahasiswa */}
     <Modal visible={modalVisible} transparent animationType="slide">
@@ -249,45 +244,39 @@ return (
 
                 <Text style={styles.modalTitle}>Detail Mahasiswa</Text>
                 <View style={styles.fotoContainer}>
-                <View style={[styles.fotoPlaceholder, { backgroundColor: "#E0E0E0" }]} />
+                <View
+                    style={[styles.fotoPlaceholder, { backgroundColor: "#E0E0E0" }]}
+                />
                 </View>
 
                 <View style={styles.modalInfoContainer}>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Nama:</Text>
-                    <Text style={styles.infoValue}>{selectedMahasiswa.nama}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>NIM:</Text>
-                    <Text style={styles.infoValue}>{selectedMahasiswa.nim}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Jurusan:</Text>
-                    <Text style={styles.infoValue}>{selectedMahasiswa.jurusan}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Fakultas:</Text>
-                    <Text style={styles.infoValue}>{selectedMahasiswa.fakultas}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Semester:</Text>
-                    <Text style={styles.infoValue}>{selectedMahasiswa.semester}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Jenis Kelamin:</Text>
-                    <Text style={styles.infoValue}>
-                    {selectedMahasiswa.jenisKelamin}
-                    </Text>
-                </View>
+                {[
+                    ["Nama", selectedMahasiswa.nama],
+                    ["NIM", selectedMahasiswa.nim],
+                    ["Telpon/WA", selectedMahasiswa.whatsapp],
+                    ["E-mail", selectedMahasiswa.email],
+                    ["Jurusan", selectedMahasiswa.jurusan],
+                    ["Fakultas", selectedMahasiswa.fakultas],
+                    ["Semester", selectedMahasiswa.semester],
+                    ["Jenis Kelamin", selectedMahasiswa.jenisKelamin],
+                ].map(([label, value]) => (
+                    <View style={styles.infoRow} key={label}>
+                    <Text style={styles.infoLabel}>{label}:</Text>
+                    <Text style={styles.infoValue}>{value}</Text>
+                    </View>
+                ))}
                 </View>
 
                 <Card title="Riwayat Pemantauan Terbaru">
-                <View style={styles.historyItem}>
-                    <Text style={styles.historyDate}>15 Januari 2025</Text>
+                {selectedMahasiswa.riwayat.map((r, index) => (
+                    <View style={styles.historyItem} key={index}>
+                    <Text style={styles.historyDate}>{r.tanggal}</Text>
                     <Text style={styles.historyText}>
-                    Depresi: Sedang | Kecemasan: Ringan | Stres: Sedang
+                        Depresi: {r.depresi} | Kecemasan: {r.kecemasan} | Stres:{" "}
+                        {r.stres}
                     </Text>
-                </View>
+                    </View>
+                ))}
                 </Card>
             </ScrollView>
             )}
@@ -309,7 +298,6 @@ searchInput: {
     fontSize: 14,
     color: "#333",
 },
-// === Dropdown Fakultas ===
 dropdownContainer: { marginBottom: 15 },
 dropdownButton: {
     backgroundColor: "#E9E8FF",
@@ -334,8 +322,6 @@ dropdownSearchInput: {
 },
 dropdownItem: { padding: 10 },
 dropdownItemText: { fontSize: 13, color: "#333" },
-
-// === Sort dan tabel tetap ===
 sortContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -352,17 +338,8 @@ sortButton: {
 sortButtonActive: { backgroundColor: "#534DD9" },
 sortButtonText: { color: "#041062", fontSize: 13, fontWeight: "500" },
 sortButtonTextActive: { color: "#fff" },
-
 emptyContainer: { alignItems: "center", paddingVertical: 30 },
 emptyText: { color: "#999", fontSize: 14 },
-tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#F0F0F0",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    marginBottom: 8,
-},
 tableRow: {
     flexDirection: "row",
     paddingVertical: 12,
@@ -375,7 +352,6 @@ nameCell: { flex: 2 },
 nimCell: { flex: 1.5, textAlign: "center" },
 actionCell: { flex: 1, textAlign: "center" },
 actionText: { color: "#534DD9", fontWeight: "600" },
-
 modalContainer: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -391,7 +367,12 @@ modalContent: {
 modalScrollContent: { paddingHorizontal: 20, paddingBottom: 30 },
 closeButton: { alignItems: "flex-end", marginBottom: 10 },
 closeButtonText: { fontSize: 24, color: "#999", fontWeight: "bold" },
-modalTitle: { fontSize: 20, fontWeight: "bold", color: "#041062", marginBottom: 15 },
+modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#041062",
+    marginBottom: 15,
+},
 fotoContainer: { alignItems: "center", marginBottom: 20 },
 fotoPlaceholder: { width: 100, height: 100, borderRadius: 50 },
 modalInfoContainer: { marginBottom: 20 },

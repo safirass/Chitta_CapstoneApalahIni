@@ -18,7 +18,7 @@ export default function MusicScreen({ navigation }) {
   useEffect(() => {
     const fetchMusic = async () => {
       try {
-        const response = await fetch("http://192.168.1.5:5000/api/music");
+        const response = await fetch("http://xxxxxxxx:5000/api/music");
         const data = await response.json();
         setTracks(data);
       } catch (error) {
@@ -34,15 +34,13 @@ export default function MusicScreen({ navigation }) {
   if (loading) {
     return (
       <Container>
-        <Text style={styles.title}>Musik Relaksasi</Text>
         <SkeletonList />
       </Container>
     );
   }
 
   return (
-    <Container>
-      <Text style={styles.title}>Musik Relaksasi</Text>
+    <Container scrollable={false}>
       <FlatList
         data={tracks}
         keyExtractor={(item, index) => index.toString()}
@@ -73,7 +71,6 @@ export default function MusicScreen({ navigation }) {
   );
 }
 
-/* 🎨 Skeleton Loading Component */
 const SkeletonList = () => {
   const fadeAnim = new Animated.Value(0.3);
 

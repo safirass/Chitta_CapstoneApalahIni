@@ -20,7 +20,7 @@ export default function JournalListScreen({ navigation }) {
   };
 
   return (
-    <Container>
+    <Container scrollable={false}>
 
         <TouchableOpacity
           style={styles.addButton}

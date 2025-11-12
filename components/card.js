@@ -12,7 +12,7 @@ style,
 const getBorderColor = () => {
     switch (type) {
     case "info":
-        return "#534DD9"; // ungu
+        return "#534DD9"; 
     default:
         return "#ddd";
     }

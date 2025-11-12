@@ -1,96 +1,70 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput } from "react-native"
+import { useState, useMemo, useEffect } from "react"
+import {
+View,
+Text,
+StyleSheet,
+ScrollView,
+TouchableOpacity,
+Modal,
+TextInput,
+ActivityIndicator,
+} from "react-native"
 import Container from "../../components/container"
 import Card from "../../components/card"
-
-// Data dummy riwayat pemantauan mahasiswa
-const DUMMY_RIWAYAT = [
-{
-    id: "1",
-    nama: "Budi Santoso",
-    nim: "21120122140001",
-    tanggal: "15 Januari 2025",
-    detailRiwayat: [
-    { tanggal: "15/01", Depresi: 2, Kecemasan: 2, Stres: 1 },
-    { tanggal: "08/01", Depresi: 1, Kecemasan: 3, Stres: 2 },
-    { tanggal: "01/01", Depresi: 2, Kecemasan: 2, Stres: 1 },
-    ],
-},
-{
-    id: "2",
-    nama: "Siti Nurhaliza",
-    nim: "21120122130002",
-    tanggal: "14 Januari 2025",
-    detailRiwayat: [
-    { tanggal: "14/01", Depresi: 1, Kecemasan: 2, Stres: 2 },
-    { tanggal: "07/01", Depresi: 2, Kecemasan: 1, Stres: 1 },
-    ],
-},
-{
-    id: "3",
-    nama: "Ahmad Rizki",
-    nim: "21120122140003",
-    tanggal: "13 Januari 2025",
-    detailRiwayat: [{ tanggal: "13/01", Depresi: 3, Kecemasan: 3, Stres: 2 }],
-},
-{
-    id: "4",
-    nama: "Dewi Kusuma",
-    nim: "21120122130004",
-    tanggal: "12 Januari 2025",
-    detailRiwayat: [
-    { tanggal: "12/01", Depresi: 1, Kecemasan: 1, Stres: 1 },
-    { tanggal: "05/01", Depresi: 2, Kecemasan: 2, Stres: 3 },
-    ],
-},
-{
-    id: "5",
-    nama: "Riyanto Wijaya",
-    nim: "21120122140005",
-    tanggal: "10 Januari 2025",
-    detailRiwayat: [{ tanggal: "10/01", Depresi: 2, Kecemasan: 2, Stres: 2 }],
-},
-]
-
-const levelKeterangan = {
-1: "Ringan",
-2: "Sedang",
-3: "Berat",
-4: "Sangat Berat",
-}
+import API from "../../data/MahasiswaDummy"
 
 export default function RiwayatPemantauanMahasiswaScreen() {
-const [sortBy, setSortBy] = useState("nama") // "nama" atau "tanggal"
+const [riwayatData, setRiwayatData] = useState([])
+const [loading, setLoading] = useState(true)
+const [sortOrder, setSortOrder] = useState("desc") // desc = terbaru dulu, asc = terlama dulu
 const [searchQuery, setSearchQuery] = useState("")
 const [selectedRiwayat, setSelectedRiwayat] = useState(null)
 const [modalVisible, setModalVisible] = useState(false)
 
-// Filter dan sort data
+useEffect(() => {
+    const fetchData = async () => {
+    try {
+        const data = await API.getAllRiwayat()
+        // Urutkan dari terbaru ke terlama langsung di awal
+        const sortedData = data.sort(
+        (a, b) => new Date(b.tanggal) - new Date(a.tanggal)
+        )
+        setRiwayatData(sortedData)
+    } catch (err) {
+        console.error("Gagal ambil data:", err)
+    } finally {
+        setLoading(false)
+    }
+    }
+    fetchData()
+}, [])
+
 const filteredRiwayat = useMemo(() => {
-    let data = [...DUMMY_RIWAYAT]
+    let data = [...riwayatData]
 
     // Search
     if (searchQuery) {
-    data = data.filter((r) => r.nama.toLowerCase().includes(searchQuery.toLowerCase()) || r.nim.includes(searchQuery))
+    data = data.filter(
+        (r) =>
+        r.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.nim.includes(searchQuery)
+    )
     }
 
-    // Sort
-    data.sort((a, b) => {
-    if (sortBy === "nama") {
-        return a.nama.localeCompare(b.nama)
-    } else {
-        // Sort by tanggal (newest first)
-        return new Date(b.tanggal) - new Date(a.tanggal)
-    }
-    })
+    // Sort berdasarkan tanggal terbaru / terlama
+    data.sort((a, b) =>
+    sortOrder === "desc"
+        ? new Date(b.tanggal) - new Date(a.tanggal)
+        : new Date(a.tanggal) - new Date(b.tanggal)
+    )
 
     return data
-}, [sortBy, searchQuery])
+}, [riwayatData, sortOrder, searchQuery])
 
 return (
-    <Container>
+    <Container scrollable={false}>
     <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
@@ -106,66 +80,114 @@ return (
         {/* Sort Options */}
         <View style={styles.sortContainer}>
         <Text style={styles.sortLabel}>Urutkan:</Text>
+
         <TouchableOpacity
-            style={[styles.sortButton, sortBy === "nama" && styles.sortButtonActive]}
-            onPress={() => setSortBy("nama")}
+            style={[
+            styles.sortButton,
+            sortOrder === "desc" && styles.sortButtonActive,
+            ]}
+            onPress={() => setSortOrder("desc")}
         >
-            <Text style={[styles.sortButtonText, sortBy === "nama" && styles.sortButtonTextActive]}>Nama</Text>
+            <Text
+            style={[
+                styles.sortButtonText,
+                sortOrder === "desc" && styles.sortButtonTextActive,
+            ]}
+            >
+            🔽 Terbaru
+            </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-            style={[styles.sortButton, sortBy === "tanggal" && styles.sortButtonActive]}
-            onPress={() => setSortBy("tanggal")}
+            style={[
+            styles.sortButton,
+            sortOrder === "asc" && styles.sortButtonActive,
+            ]}
+            onPress={() => setSortOrder("asc")}
         >
-            <Text style={[styles.sortButtonText, sortBy === "tanggal" && styles.sortButtonTextActive]}>Tanggal</Text>
+            <Text
+            style={[
+                styles.sortButtonText,
+                sortOrder === "asc" && styles.sortButtonTextActive,
+            ]}
+            >
+            🔼 Terlama
+            </Text>
         </TouchableOpacity>
         </View>
 
-        {/* Tabel Riwayat */}
-        <Card title={`Riwayat Pemantauan (${filteredRiwayat.length})`}>
-        {filteredRiwayat.length === 0 ? (
-            <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Tidak ada riwayat yang ditemukan</Text>
-            </View>
+        {/* Loading Indicator */}
+        {loading ? (
+        <View style={{ alignItems: "center", marginTop: 40 }}>
+            <ActivityIndicator size="large" color="#534DD9" />
+        </View>
         ) : (
-            <View>
-            {/* Header Tabel */}
-            <View style={styles.tableHeader}>
-                <Text style={[styles.tableCell, styles.nameCell]}>Nama</Text>
-                <Text style={[styles.tableCell, styles.dateCell]}>Tanggal Pemantauan</Text>
-                <Text style={[styles.tableCell, styles.actionCell]}>Aksi</Text>
+        <Card title={`Riwayat Pemantauan (${filteredRiwayat.length})`}>
+            {filteredRiwayat.length === 0 ? (
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Tidak ada riwayat yang ditemukan</Text>
             </View>
+            ) : (
+            <View>
+                {/* Header Tabel */}
+                <View style={styles.tableHeader}>
+                <Text style={[styles.tableCell, styles.nameCell]}>Nama</Text>
+                <Text style={[styles.tableCell, styles.dateCell]}>
+                    Tanggal Pemantauan
+                </Text>
+                <Text style={[styles.tableCell, styles.actionCell]}>Detail</Text>
+                </View>
 
-            {/* Isi Tabel */}
-            {filteredRiwayat.map((riwayat) => (
+                {/* Isi Tabel */}
+                {filteredRiwayat.map((riwayat) => (
                 <TouchableOpacity
-                key={riwayat.id}
-                style={styles.tableRow}
-                onPress={() => {
+                    key={riwayat.id}
+                    style={styles.tableRow}
+                    onPress={() => {
                     setSelectedRiwayat(riwayat)
                     setModalVisible(true)
-                }}
+                    }}
                 >
-                <Text style={[styles.tableCell, styles.nameCell]}>{riwayat.nama}</Text>
-                <Text style={[styles.tableCell, styles.dateCell]}>{riwayat.tanggal}</Text>
-                <Text style={[styles.tableCell, styles.actionCell, styles.actionText]}>Buka</Text>
+                    <Text style={[styles.tableCell, styles.nameCell]}>
+                    {riwayat.nama}
+                    </Text>
+                    <Text style={[styles.tableCell, styles.dateCell]}>
+                    {riwayat.tanggal}
+                    </Text>
+                    <Text
+                    style={[styles.tableCell, styles.actionCell, styles.actionText]}
+                    >
+                    Buka
+                    </Text>
                 </TouchableOpacity>
-            ))}
+                ))}
             </View>
-        )}
+            )}
         </Card>
+        )}
     </ScrollView>
 
     {/* Modal Detail Riwayat */}
-    <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
+    <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+    >
         <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
             {selectedRiwayat && (
             <ScrollView contentContainerStyle={styles.modalScrollContent}>
-                <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+                >
                 <Text style={styles.closeButtonText}>✕</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.modalTitle}>Riwayat Pemantauan {selectedRiwayat.nama}</Text>
+                <Text style={styles.modalTitle}>
+                Riwayat Pemantauan {selectedRiwayat.nama}
+                </Text>
 
                 <View style={styles.modalInfoContainer}>
                 <View style={styles.infoRow}>
@@ -179,48 +201,28 @@ return (
                 </View>
 
                 {/* Detail Riwayat Pemantauan */}
-                <Card title={`Pemantauan di Tanggal ${selectedRiwayat.tanggal}`}>
-                {selectedRiwayat.detailRiwayat.map((detail, index) => (
+                <Card title="Detail Pemantauan">
+                {selectedRiwayat.riwayatDetail
+                    .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
+                    .map((detail, index) => (
                     <View key={index} style={styles.detailItem}>
-                    <Text style={styles.detailDate}>Tanggal: {detail.tanggal}</Text>
-                    <View style={styles.detailContent}>
-                        <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Depresi:</Text>
-                        <Text style={styles.detailValue}>
-                            {levelKeterangan[detail.Depresi]} (Level {detail.Depresi})
+                        <Text style={styles.detailDate}>
+                        Tanggal: {detail.tanggal}
                         </Text>
-                        </View>
-                        <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Kecemasan:</Text>
-                        <Text style={styles.detailValue}>
-                            {levelKeterangan[detail.Kecemasan]} (Level {detail.Kecemasan})
+                        <View style={styles.detailContent}>
+                        <Text style={styles.detailLabel}>
+                            Depresi: {detail.depresi} (Level {detail.depresiLevel})
                         </Text>
-                        </View>
-                        <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Stres:</Text>
-                        <Text style={styles.detailValue}>
-                            {levelKeterangan[detail.Stres]} (Level {detail.Stres})
+                        <Text style={styles.detailLabel}>
+                            Kecemasan: {detail.kecemasan} (Level{" "}
+                            {detail.kecemAsanLevel})
+                        </Text>
+                        <Text style={styles.detailLabel}>
+                            Stres: {detail.stres} (Level {detail.stresLevel})
                         </Text>
                         </View>
                     </View>
-                    </View>
-                ))}
-                </Card>
-
-                {/* Keterangan Level */}
-                <Card title="Keterangan Level">
-                <Text style={styles.keteranganText}>
-                    <Text style={styles.bold}>1 (Ringan):</Text> Gejala ringan, dapat diatasi dengan relaksasi.
-                </Text>
-                <Text style={styles.keteranganText}>
-                    <Text style={styles.bold}>2 (Sedang):</Text> Mulai mengganggu aktivitas, disarankan konsultasi.
-                </Text>
-                <Text style={styles.keteranganText}>
-                    <Text style={styles.bold}>3 (Berat):</Text> Gejala intens, perlu dukungan profesional.
-                </Text>
-                <Text style={styles.keteranganText}>
-                    <Text style={styles.bold}>4 (Sangat Berat):</Text> Gangguan fungsi harian, butuh psikiater.
-                </Text>
+                    ))}
                 </Card>
             </ScrollView>
             )}
@@ -232,12 +234,8 @@ return (
 }
 
 const styles = StyleSheet.create({
-scrollContainer: {
-    paddingBottom: 30,
-},
-searchContainer: {
-    marginBottom: 15,
-},
+scrollContainer: { paddingBottom: 30 },
+searchContainer: { marginBottom: 15 },
 searchInput: {
     backgroundColor: "#F0F0F0",
     borderRadius: 8,
@@ -246,17 +244,8 @@ searchInput: {
     fontSize: 14,
     color: "#333",
 },
-sortContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-},
-sortLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginRight: 10,
-    color: "#333",
-},
+sortContainer: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
+sortLabel: { fontSize: 14, fontWeight: "600", marginRight: 10, color: "#333" },
 sortButton: {
     backgroundColor: "#E9E8FF",
     paddingVertical: 6,
@@ -264,25 +253,11 @@ sortButton: {
     borderRadius: 6,
     marginRight: 8,
 },
-sortButtonActive: {
-    backgroundColor: "#534DD9",
-},
-sortButtonText: {
-    color: "#041062",
-    fontSize: 13,
-    fontWeight: "500",
-},
-sortButtonTextActive: {
-    color: "#fff",
-},
-emptyContainer: {
-    alignItems: "center",
-    paddingVertical: 30,
-},
-emptyText: {
-    color: "#999",
-    fontSize: 14,
-},
+sortButtonActive: { backgroundColor: "#534DD9" },
+sortButtonText: { color: "#041062", fontSize: 13, fontWeight: "500" },
+sortButtonTextActive: { color: "#fff" },
+emptyContainer: { alignItems: "center", paddingVertical: 30 },
+emptyText: { color: "#999", fontSize: 14 },
 tableHeader: {
     flexDirection: "row",
     backgroundColor: "#F0F0F0",
@@ -298,25 +273,11 @@ tableRow: {
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
 },
-tableCell: {
-    fontSize: 13,
-    color: "#333",
-},
-nameCell: {
-    flex: 1.5,
-},
-dateCell: {
-    flex: 1.5,
-},
-actionCell: {
-    flex: 0.7,
-    textAlign: "center",
-},
-actionText: {
-    color: "#534DD9",
-    fontWeight: "600",
-},
-// Modal Styles
+tableCell: { fontSize: 13, color: "#333" },
+nameCell: { flex: 1.5 },
+dateCell: { flex: 1.5 },
+actionCell: { flex: 0.7, textAlign: "center" },
+actionText: { color: "#534DD9", fontWeight: "600" },
 modalContainer: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -329,43 +290,14 @@ modalContent: {
     maxHeight: "90%",
     paddingTop: 20,
 },
-modalScrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-},
-closeButton: {
-    alignItems: "flex-end",
-    marginBottom: 10,
-},
-closeButtonText: {
-    fontSize: 24,
-    color: "#999",
-    fontWeight: "bold",
-},
-modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#041062",
-    marginBottom: 15,
-},
-modalInfoContainer: {
-    marginBottom: 20,
-},
-infoRow: {
-    flexDirection: "row",
-    marginBottom: 12,
-},
-infoLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#041062",
-    width: 100,
-},
-infoValue: {
-    fontSize: 14,
-    color: "#555",
-    flex: 1,
-},
+modalScrollContent: { paddingHorizontal: 20, paddingBottom: 30 },
+closeButton: { alignItems: "flex-end", marginBottom: 10 },
+closeButtonText: { fontSize: 24, color: "#999", fontWeight: "bold" },
+modalTitle: { fontSize: 20, fontWeight: "bold", color: "#041062", marginBottom: 15 },
+modalInfoContainer: { marginBottom: 20 },
+infoRow: { flexDirection: "row", marginBottom: 12 },
+infoLabel: { fontSize: 14, fontWeight: "600", color: "#041062", width: 100 },
+infoValue: { fontSize: 14, color: "#555", flex: 1 },
 detailItem: {
     backgroundColor: "#F4F4FF",
     borderRadius: 8,
@@ -374,37 +306,6 @@ detailItem: {
     borderLeftWidth: 4,
     borderLeftColor: "#534DD9",
 },
-detailDate: {
-    fontWeight: "bold",
-    color: "#041062",
-    marginBottom: 8,
-},
-detailContent: {
-    marginTop: 8,
-},
-detailRow: {
-    flexDirection: "row",
-    marginBottom: 6,
-},
-detailLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#333",
-    width: 100,
-},
-detailValue: {
-    fontSize: 13,
-    color: "#555",
-    flex: 1,
-},
-keteranganText: {
-    color: "#333",
-    fontSize: 13,
-    marginBottom: 8,
-    lineHeight: 18,
-},
-bold: {
-    fontWeight: "bold",
-    color: "#041062",
-},
+detailDate: { fontWeight: "bold", color: "#041062", marginBottom: 8 },
+detailLabel: { fontSize: 13, marginBottom: 4, color: "#333" },
 })

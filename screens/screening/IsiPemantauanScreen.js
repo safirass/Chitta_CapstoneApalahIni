@@ -19,7 +19,7 @@ const [result, setResult] = useState(null);
 
 // Ganti sesuai endpoint server-mu (misal localhost:8000 atau domain deploy)
 const API_BASE_URL = "http://10.0.2.2:8000/api"; // untuk emulator Android
-// kalau pakai HP fisik: ganti ke IP laptop kamu (misal "http://192.168.1.7:8000/api")
+// kalau pakai HP fisik: ganti ke IP laptop
 
 useEffect(() => {
     // contoh dummy fetch pertanyaan (sementara kalau belum ada endpoint khusus)

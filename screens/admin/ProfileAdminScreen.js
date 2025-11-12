@@ -1,6 +1,6 @@
 
 import { useState } from "react"
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native"
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native"
 import Container from "../../components/container"
 import Card from "../../components/card"
 
@@ -9,7 +9,26 @@ const [profileData] = useState({
     nama: "Dr. Admin Undip",
     nip: "1234567890123456", 
 })
-
+const handleLogout = () => {
+    Alert.alert(
+    "Konfirmasi Logout",
+    "Apakah Anda yakin ingin keluar dari akun ini?",
+    [
+        {
+        text: "Batal",
+        style: "cancel",
+        },
+        {
+        text: "Ya, Logout",
+        onPress: () => {
+            setIsLoggedIn(false)
+        },
+        style: "destructive",
+        },
+    ],
+    { cancelable: true }
+    )
+}
 return (
     <Container>
     <Card type="info">
@@ -21,7 +40,7 @@ return (
         <Text style={styles.value}>{profileData.nip}</Text>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={() => setIsLoggedIn(false)}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>→ Logout</Text>
         </TouchableOpacity>
     </Card>

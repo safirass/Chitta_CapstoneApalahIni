@@ -55,7 +55,7 @@ export default function AddEditJournalScreen({ route, navigation }) {
   };
 
   return (
-    <Container>
+    <Container >
       <Card>
         <Text style={styles.date}>{formattedDate}</Text>
 

@@ -19,7 +19,7 @@ const handleRegister = () => {
     if (email.trim() === "") {
     Alert.alert("Peringatan", "Email SSO tidak boleh kosong!");
     } else {
-    Alert.alert("Sukses", `Akun dengan email ${email} berhasil didaftarkan!`);
+    // Alert.alert("Sukses", `Akun dengan email ${email} berhasil didaftarkan!`);
     console.log("Email SSO:", email);
     navigation.navigate("RegisterDetail", { email });
     }

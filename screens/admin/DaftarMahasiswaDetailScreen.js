@@ -10,6 +10,7 @@ Modal,
 TextInput,
 FlatList,
 ScrollView,
+Linking,
 } from "react-native"
 import Container from "../../components/container"
 import Card from "../../components/card"
@@ -253,8 +254,6 @@ return (
                 {[
                     ["Nama", selectedMahasiswa.nama],
                     ["NIM", selectedMahasiswa.nim],
-                    ["Telpon/WA", selectedMahasiswa.whatsapp],
-                    ["E-mail", selectedMahasiswa.email],
                     ["Jurusan", selectedMahasiswa.jurusan],
                     ["Fakultas", selectedMahasiswa.fakultas],
                     ["Semester", selectedMahasiswa.semester],
@@ -265,6 +264,42 @@ return (
                     <Text style={styles.infoValue}>{value}</Text>
                     </View>
                 ))}
+                </View>
+                {/* Kontak */}
+                <View style={{ marginTop: 15 }}>
+                {/* WhatsApp */}
+                <TouchableOpacity
+                    style={{
+                    backgroundColor: "#25D366",
+                    padding: 10,
+                    borderRadius: 6,
+                    marginBottom: 10,
+                    alignItems: "center",
+                    }}
+                    onPress={() => {
+                    const waNumber = "+628123456789"; // ganti dengan nomor mahasiswa
+                    Linking.openURL(`https://wa.me/${waNumber}`);
+                    }}
+                >
+                    <Text style={{ color: "#fff", fontWeight: "bold" }}>Chat WA</Text>
+                </TouchableOpacity>
+
+                {/* Email */}
+                <TouchableOpacity
+                    style={{
+                    backgroundColor: "#534DD9",
+                    padding: 10,
+                    borderRadius: 6,
+                    alignItems: "center",
+                    marginBottom: 20,
+                    }}
+                    onPress={() => {
+                    const email = "mahasiswa@email.com"; // ganti dengan email mahasiswa
+                    Linking.openURL(`mailto:${email}`);
+                    }}
+                >
+                    <Text style={{ color: "#fff", fontWeight: "bold" }}>Kirim Email</Text>
+                </TouchableOpacity>
                 </View>
 
                 <Card title="Riwayat Pemantauan Terbaru">

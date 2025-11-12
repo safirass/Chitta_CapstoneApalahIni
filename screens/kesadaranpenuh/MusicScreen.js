@@ -18,7 +18,7 @@ export default function MusicScreen({ navigation }) {
   useEffect(() => {
     const fetchMusic = async () => {
       try {
-        const response = await fetch("http://xxxxxxxx:5000/api/music");
+        const response = await fetch("http://192.168.183.224:5000/api/music");
         const data = await response.json();
         setTracks(data);
       } catch (error) {

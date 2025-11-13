@@ -2,20 +2,20 @@
 
 import { useState, useMemo, useEffect } from "react"
 import {
-View,
-Text,
-StyleSheet,
-TouchableOpacity,
-Modal,
-TextInput,
-FlatList,
-ScrollView,
-Linking,
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Modal,
+    TextInput,
+    FlatList,
+    ScrollView,
+    Linking,
 } from "react-native"
 import Container from "../../components/container"
 import Card from "../../components/card"
 import { UNDIP_DATA } from "../../data/FakultasJurusan"
-import API from "../../data/MahasiswaDummy" // ✅ ambil dari file dummy API
+import API from "../../data/MahasiswaDummy" 
 
 export default function DaftarMahasiswaDetailScreen() {
 const [mahasiswaList, setMahasiswaList] = useState([])
@@ -31,7 +31,6 @@ const [searchFakultas, setSearchFakultas] = useState("")
 
 const fakultasList = Object.keys(UNDIP_DATA)
 
-// ✅ Ambil data dari dummy API
 useEffect(() => {
     const fetchData = async () => {
     try {
@@ -75,7 +74,7 @@ const filteredMahasiswa = useMemo(() => {
     return data
 }, [mahasiswaList, selectedFakultas, sortBy, searchQuery])
 
-// ✅ Tampilan loading
+
 if (loading) {
     return (
     <Container>

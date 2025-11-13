@@ -18,6 +18,8 @@ import TipsStresScreen from "./screens/tips/TipsStresScreen"
 import IsiPemantauanScreen from "./screens/screening/IsiPemantauanScreen"
 import HasilPemantauanScreen from "./screens/screening/HasilPemantauanScreen"
 import MusicDetailScreen from "./screens/kesadaranpenuh/MusicDetailScreen"
+import ForgotPasswordScreen from "./screens/auth/lupapassword/ForgotPasswordScreen"
+import TokenVerificationScreen from "./screens/auth/lupapassword/TokenAndVerificationScreen"
 
 import SplashScreen from "./screens/auth/SplashScreen"
 import LoginScreen from "./screens/auth/LoginScreen"
@@ -35,6 +37,7 @@ const Stack = createNativeStackNavigator()
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userRole, setUserRole] = useState(null) 
+  const [userData, setUserData] = useState(null);
 
   return (
     <NavigationContainer>
@@ -53,6 +56,8 @@ export default function App() {
             </Stack.Screen>
             <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
             <Stack.Screen name="RegisterDetail" component={RegisterDetailScreen} options={{ title: "Register" }} />
+                        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{headerShown: false}}/>
+            <Stack.Screen name="TokenAndVerification" component={TokenVerificationScreen} options={{title: "Kembali"}}/>
           </>
         ) : userRole === "admin" ? (
           // ===================== ADMIN ROUTES =====================

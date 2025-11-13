@@ -48,7 +48,6 @@ return (
         </Text>
 
         {/* Input Email */}
-        <Text style={styles.label}>Email</Text>
         <TextInput
         style={styles.input}
         placeholder="Masukkan Email"

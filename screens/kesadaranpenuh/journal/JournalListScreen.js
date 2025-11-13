@@ -10,8 +10,7 @@ export default function JournalListScreen({ navigation }) {
       id: "1",
       title: "Jurnal Hari Ini",
       date: "3 Januari 2025",
-      image: "https://i.pinimg.com/736x/f2/53/f5/f253f579b60285e77d5b444f423ddcc3.jpg",
-      content: "Lorem ipsum dolor sit amet...",
+      isi_jurnal: "Lorem ipsum dolor sit amet...",
     },
   ]);
 
@@ -47,12 +46,11 @@ export default function JournalListScreen({ navigation }) {
             >
               <Card>
                 <View style={styles.cardRow}>
-                  <Image source={{ uri: item.image }} style={styles.image} />
                   <View style={styles.textContainer}>
                     <Text style={styles.title}>{item.title}</Text>
                     <Text style={styles.date}>{item.date}</Text>
                     <Text numberOfLines={1} style={styles.preview}>
-                      {item.content}
+                      {item.isi_jurnal}
                     </Text>
                   </View>
                 </View>

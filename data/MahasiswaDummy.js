@@ -3,12 +3,15 @@
 // ini nanti bisa dihapus kalau udah connect ke backend beneran
 
 // Dummy data mahasiswa - sesuai di semua screen
+// Dummy data mahasiswa - bisa dipakai untuk login, profile, dan riwayat
+
 const MAHASISWA_DATA = [
 {
     id: "1",
     nama: "Safira Septiandika Salsabila",
     nim: "21120122140147",
-    whatsapp: "6281234567891",
+    password: "safira123",
+    whatsapp: "6281229912499",
     email: "safira@students.undip.ac.id",
     fakultas: "Fakultas Teknik",
     jurusan: "Teknik Komputer",
@@ -23,18 +26,8 @@ const MAHASISWA_DATA = [
         kecemasan: "Berat",
         stres: "Sangat Berat",
         depresiLevel: 4,
-        kecemAsanLevel: 3,
+        kecemasanLevel: 3,
         stresLevel: 4,
-    },
-    {
-        id: "1-2",
-        tanggal: "10-12-2024",
-        depresi: "Ringan",
-        kecemasan: "Ringan",
-        stres: "Ringan",
-        depresiLevel: 1,
-        kecemAsanLevel: 1,
-        stresLevel: 1,
     },
     ],
 },
@@ -42,6 +35,7 @@ const MAHASISWA_DATA = [
     id: "2",
     nama: "Syabina Kamila",
     nim: "21120122140132",
+    password: "syabina123",
     whatsapp: "6281234567890",
     email: "syabina@students.undip.ac.id",
     fakultas: "Fakultas Teknik",
@@ -57,18 +51,8 @@ const MAHASISWA_DATA = [
         kecemasan: "Sedang",
         stres: "Sangat Berat",
         depresiLevel: 3,
-        kecemAsanLevel: 2,
+        kecemasanLevel: 2,
         stresLevel: 4,
-    },
-    {
-        id: "2-2",
-        tanggal: "25-12-2024",
-        depresi: "Sedang",
-        kecemasan: "Sedang",
-        stres: "Berat",
-        depresiLevel: 2,
-        kecemAsanLevel: 2,
-        stresLevel: 3,
     },
     ],
 },
@@ -76,6 +60,7 @@ const MAHASISWA_DATA = [
     id: "3",
     nama: "Bagaskara Dipowicaksono HP",
     nim: "21120122140119",
+    password: "bagas123",
     whatsapp: "6281298765432",
     email: "bagas@students.undip.ac.id",
     fakultas: "Fakultas Teknik",
@@ -91,17 +76,7 @@ const MAHASISWA_DATA = [
         kecemasan: "Ringan",
         stres: "Ringan",
         depresiLevel: 4,
-        kecemAsanLevel: 1,
-        stresLevel: 1,
-    },
-    {
-        id: "3-2",
-        tanggal: "05-12-2024",
-        depresi: "Ringan",
-        kecemasan: "Berat",
-        stres: "Ringan",
-        depresiLevel: 1,
-        kecemAsanLevel: 3,
+        kecemasanLevel: 1,
         stresLevel: 1,
     },
     ],
@@ -110,6 +85,7 @@ const MAHASISWA_DATA = [
     id: "4",
     nama: "Bagus Panggalih",
     nim: "21120122140106",
+    password: "bagus123",
     whatsapp: "081212345678",
     email: "bagus@students.undip.ac.id",
     fakultas: "Fakultas Teknik",
@@ -121,99 +97,41 @@ const MAHASISWA_DATA = [
     {
         id: "4-1",
         tanggal: "12-11-2025",
-        depresi: "Sedang",
-        kecemasan: "Berat",
-        stres: "Sedang",
-        depresiLevel: 2,
-        kecemAsanLevel: 3,
-        stresLevel: 2,
-    },
-    {
-        id: "4-2",
-        tanggal: "30-12-2024",
-        depresi: "Berat",
-        kecemasan: "Sedang",
-        stres: "Sedang",
-        depresiLevel: 3,
-        kecemAsanLevel: 2,
-        stresLevel: 2,
+        depresi: "Sangat Berat",
+        kecemasan: "Sangat Berat",
+        stres: "Sangat Berat",
+        depresiLevel: 4,
+        kecemasanLevel: 4,
+        stresLevel: 4,
     },
     ],
 },
-]
+];
 
-// Level Keterangan
-const LEVEL_KETERANGAN = {
-1: "Ringan",
-2: "Sedang",
-3: "Berat",
-4: "Sangat Berat",
-}
-
-// API Endpoints - Backend
+// API simulasi untuk ambil data
 export const API = {
-getProfile: async () =>
-    new Promise((resolve) => {
-    setTimeout(() => resolve(MAHASISWA_DATA[0]), 500)
-    }),
-
 getAllMahasiswa: async () =>
-    new Promise((resolve) => {
-    setTimeout(() => resolve(MAHASISWA_DATA), 500)
-    }),
+    new Promise((resolve) => setTimeout(() => resolve(MAHASISWA_DATA), 300)),
 
-getMahasiswaById: async (id) =>
+getMahasiswaByNIM: async (nim) =>
     new Promise((resolve, reject) => {
     setTimeout(() => {
-        const mahasiswa = MAHASISWA_DATA.find((m) => m.id === id)
-        mahasiswa ? resolve(mahasiswa) : reject(new Error("Mahasiswa not found"))
-    }, 500)
+        const m = MAHASISWA_DATA.find((x) => x.nim === nim);
+        m ? resolve(m) : reject(new Error("Mahasiswa tidak ditemukan"));
+    }, 300);
     }),
 
-getRiwayatMahasiswa: async (id) =>
+login: async (nim, password) =>
     new Promise((resolve, reject) => {
     setTimeout(() => {
-        const mahasiswa = MAHASISWA_DATA.find((m) => m.id === id)
-        mahasiswa
-        ? resolve({
-            id: mahasiswa.id,
-            nama: mahasiswa.nama,
-            nim: mahasiswa.nim,
-            riwayat: mahasiswa.riwayat,
-            })
-        : reject(new Error("Mahasiswa not found"))
-    }, 500)
+        const user = MAHASISWA_DATA.find(
+        (m) => m.nim === nim && m.password === password
+        );
+        user
+        ? resolve({ success: true, data: user })
+        : reject(new Error("NIM atau password salah"));
+    }, 300);
     }),
+};
 
-getAllRiwayat: async () =>
-    new Promise((resolve) => {
-    setTimeout(() => {
-        const allRiwayat = MAHASISWA_DATA.map((m) => ({
-        id: m.id,
-        nama: m.nama,
-        nim: m.nim,
-        tanggal: m.riwayat[0]?.tanggal || "-",
-        riwayatDetail: m.riwayat,
-        }))
-        resolve(allRiwayat)
-    }, 500)
-    }),
-
-getRiwayatById: async (id) =>
-    new Promise((resolve, reject) => {
-    setTimeout(() => {
-        const [mahasiswaId] = id.split("-")
-        const mahasiswa = MAHASISWA_DATA.find((m) => m.id === mahasiswaId)
-        if (!mahasiswa) return reject(new Error("Mahasiswa not found"))
-        const riwayat = mahasiswa.riwayat.find((r) => r.id === id)
-        riwayat
-        ? resolve({ ...riwayat, nama: mahasiswa.nama, nim: mahasiswa.nim })
-        : reject(new Error("Riwayat not found"))
-    }, 500)
-    }),
-
-getLevelKeterangan: (level) => LEVEL_KETERANGAN[level] || "Unknown",
-getAllData: () => MAHASISWA_DATA,
-}
-
-export default API
+export default API;

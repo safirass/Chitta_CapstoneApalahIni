@@ -13,7 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +24,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.CHITTA"
+      "package": "com.anonymous.CHITTA",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "favicon": "./assets/chitta.png"
@@ -30,6 +34,9 @@
       "eas": {
         "projectId": "f82850bd-03e2-4f88-a9a0-daa76ec51029"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f82850bd-03e2-4f88-a9a0-daa76ec51029"
     }
   }
 }

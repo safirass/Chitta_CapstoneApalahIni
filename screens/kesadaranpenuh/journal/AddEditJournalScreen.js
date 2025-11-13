@@ -12,7 +12,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   StyleSheet,
   Dimensions,
 } from "react-native";
@@ -23,10 +22,8 @@ import Card from "../../../components/card";
 export default function AddEditJournalScreen({ route, navigation }) {
   const { onSave, journal } = route.params || {};
   const [title, setTitle] = useState(journal ? journal.title : "");
-  const [content, setContent] = useState(journal ? journal.content : "");
-  const [image, setImage] = useState(journal ? journal.image : null);
+  const [isi_jurnal, setContent] = useState(journal ? journal.isi_jurnal : ""); // isi jurnal
 
-  // 🗓️ Ambil tanggal otomatis (format Indonesia)
   const today = new Date();
   const formattedDate = today.toLocaleDateString("id-ID", {
     day: "numeric",
@@ -34,21 +31,13 @@ export default function AddEditJournalScreen({ route, navigation }) {
     year: "numeric",
   });
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-    if (!result.canceled) setImage(result.assets[0].uri);
-  };
 
   const saveJournal = () => {
     const newJournal = {
       id: journal ? journal.id : Date.now().toString(),
       title: title || "Tanpa Judul",
       date: formattedDate,
-      content,
-      image: image || "https://via.placeholder.com/150",
+      isi_jurnal,
     };
     onSave(newJournal);
     navigation.goBack();
@@ -59,14 +48,6 @@ export default function AddEditJournalScreen({ route, navigation }) {
       <Card>
         <Text style={styles.date}>{formattedDate}</Text>
 
-        <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          {image ? (
-            <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
-          ) : (
-            <Text style={styles.addImageText}>+ Tambahkan gambar</Text>
-          )}
-        </TouchableOpacity>
-
         <TextInput
           placeholder="Judul"
           value={title}
@@ -76,7 +57,7 @@ export default function AddEditJournalScreen({ route, navigation }) {
 
         <TextInput
           placeholder="Tulis isi di sini"
-          value={content}
+          value={isi_jurnal}
           onChangeText={setContent}
           style={styles.inputContent}
           multiline

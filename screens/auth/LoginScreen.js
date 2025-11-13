@@ -1,40 +1,102 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    Image,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
+Text,
+TextInput,
+TouchableOpacity,
+StyleSheet,
+Image,
+Alert,
+KeyboardAvoidingView,
+Platform,
 ScrollView,
+ActivityIndicator,
 } from "react-native";
+import axios from "axios";
 
-export default function LoginScreen({ navigation, setIsLoggedIn, setUserRole }) {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    
-    const handleLogin = () => {
-        const adminEmail = "admin";
-        const adminPassword = "admin";
-        const userEmail = "user";
-        const userPassword = "user";
+export default function LoginScreen({ navigation, setIsLoggedIn, setUserRole, setUserData }) {
+const [id, setId] = useState(""); // bisa NIM atau NIP
+const [password, setPassword] = useState("");
+const [loading, setLoading] = useState(false);
 
-        if (email === adminEmail && password === adminPassword) {
-            setUserRole("admin");
-            setIsLoggedIn(true);
-            return;
-        }
+// === Ganti ke alamat backend nanti ===
+const API_BASE_URL = "http://10.0.2.2:8000/api";
 
-        if (email === userEmail && password === userPassword) {
-            setIsLoggedIn(true);
-            setUserRole("user");
-            return;
-        }
+// === DUMMY USERS (sementara) ===
+const dummyUsers = [
+    {
+    id: "21120122140147", // Mahasiswa pakai NIM
+    password: "12345",
+    nama: "Safira Septiandika Salsabila",
+    role: "user",
+    },
+    {
+    id: "00000", // Admin pakai NIP
+    password: "admin",
+    nama: "Admin UPT LKDPDEM",
+    role: "admin",
+    },
+];
 
-        Alert.alert("Login Gagal", "Email atau password salah!");
-    };
+const handleLogin = async () => {
+    if (!id || !password) {
+    Alert.alert("Peringatan", "Silakan isi NIM/NIP dan Password terlebih dahulu!");
+    return;
+    }
+
+    // 🟢 CEK DUMMY DULU (biar cepat login tanpa backend)
+    const user = dummyUsers.find((u) => u.id === id && u.password === password);
+
+    if (user) {
+    Alert.alert("Login Berhasil", `Selamat datang, ${user.nama}`);
+    setIsLoggedIn(true);
+    setUserRole(user.role);
+    setUserData(user);
+    navigation.replace("Home");
+    return; // stop di sini kalau pakai dummy
+    }
+
+    // 🟡 Kalau backend sudah aktif → kirim ke endpoint login
+    setLoading(true);
+    try {
+    // Tentukan apakah input berupa NIM (angka panjang) atau NIP (admin)
+    const payload =
+        id.length > 5
+        ? { nim: id, password } // mahasiswa
+        : { nip: id, password }; // admin
+
+    const res = await axios.post(`${API_BASE_URL}/auth/login`, payload);
+
+    // Contoh respons backend (C300):
+    // {
+    //   "status": "success",
+    //   "data": {
+    //     "nama": "Safira",
+    //     "nim": "21120122140147",
+    //     "role": "user",
+    //     "token": "eyJhbGciOi..."
+    //   }
+    // }
+
+    const { data } = res.data;
+    Alert.alert("Berhasil", `Selamat datang, ${data.nama}!`);
+
+    setIsLoggedIn(true);
+    setUserRole(data.role || "user");
+    setUserData({
+        id: data.nim || data.nip,
+        nama: data.nama,
+        role: data.role,
+        token: data.token || null,
+    });
+
+    navigation.replace("Home");
+    } catch (error) {
+    Alert.alert("Login Gagal", "Tidak dapat terhubung ke server backend.");
+    console.log("⚠️ Error Login:", error.message);
+    } finally {
+    setLoading(false);
+    }
+};
 
 return (
     <KeyboardAvoidingView
@@ -55,22 +117,19 @@ return (
         {/* Title */}
         <Text style={styles.title}>LOG IN</Text>
         <Text style={styles.subtitle}>
-        Selamat datang kembali! Silakan masuk untuk melanjutkan.
+        Masukkan NIM (Mahasiswa) atau NIP (Admin) dan Password untuk melanjutkan.
         </Text>
 
-        {/* Input Email */}
-        <Text style={styles.label}>Email</Text>
+        {/* Input NIM/NIP */}
         <TextInput
         style={styles.input}
-        placeholder="Masukkan Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
+        placeholder="Masukkan NIM / NIP"
+        value={id}
+        onChangeText={setId}
+        keyboardType="numeric"
         />
 
         {/* Input Password */}
-        <Text style={styles.label}>Password</Text>
         <TextInput
         style={styles.input}
         placeholder="Masukkan Password"
@@ -83,15 +142,23 @@ return (
         {/* Lupa Password */}
         <Text
         style={styles.forgot}
-        // onPress={() => navigation.navigate("forgot")}
+        onPress={() => navigation.navigate("ForgotPassword")}
         >
-        Lupa Password
+        Lupa Password?
         </Text>
 
         {/* Tombol Login */}
+        {loading ? (
+        <ActivityIndicator
+            size="large"
+            color="#534DD9"
+            style={{ marginVertical: 20 }}
+        />
+        ) : (
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>LOGIN</Text>
+            <Text style={styles.buttonText}>LOGIN</Text>
         </TouchableOpacity>
+        )}
 
         {/* Link ke Register */}
         <Text style={styles.footer}>
@@ -116,11 +183,7 @@ container: {
     backgroundColor: "#F8F9FE",
     padding: 20,
 },
-logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
-},
+logo: { width: 120, height: 120, marginBottom: 20 },
 title: {
     fontSize: 18,
     fontWeight: "bold",
@@ -134,14 +197,6 @@ subtitle: {
     color: "#000",
     marginBottom: 20,
 },
-label: {
-    alignSelf: "flex-start",
-    marginLeft: 30,
-    marginBottom: 5,
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#333",
-},
 input: {
     width: "100%",
     borderWidth: 1,
@@ -154,7 +209,7 @@ input: {
 },
 forgot: {
     alignSelf: "flex-end",
-    marginRight: 30,
+    marginRight: 10,
     marginBottom: 15,
     color: "#5A67D8",
     fontSize: 13,
@@ -167,17 +222,7 @@ button: {
     elevation: 3,
     marginBottom: 15,
 },
-buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-},
-footer: {
-    fontSize: 14,
-    color: "#000",
-},
-link: {
-    color: "#5A67D8",
-    fontWeight: "500",
-},
+buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+footer: { fontSize: 14, color: "#000" },
+link: { color: "#5A67D8", fontWeight: "500" },
 });

@@ -7,6 +7,8 @@ ScrollView,
 TouchableOpacity,
 Dimensions,
 Linking,
+ActivityIndicator,
+Alert,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Container from "../components/container";
@@ -14,12 +16,12 @@ import Card from "../components/card";
 
 const screenWidth = Dimensions.get("window").width - 30;
 
-const riwayatPerBulan = {
+// === DUMMY DATA fallback ===
+const dummyRiwayatPerBulan = {
 "Januari 2024": [
     { tanggal: "15/7", Depresi: 1, Kecemasan: 2, Stres: 1 },
     { tanggal: "22/7", Depresi: 2, Kecemasan: 3, Stres: 2 },
 ],
-"Agustus 2024": [],
 "September 2024": [
     { tanggal: "10/9", Depresi: 2, Kecemasan: 3, Stres: 1 },
     { tanggal: "12/9", Depresi: 1, Kecemasan: 2, Stres: 2 },
@@ -30,9 +32,9 @@ const riwayatPerBulan = {
     { tanggal: "15/10", Depresi: 1, Kecemasan: 2, Stres: 3 },
 ],
 "November 2025": [
-    { tanggal: "01/10", Depresi: 4, Kecemasan: 2, Stres: 4 },
-    { tanggal: "08/10", Depresi: 4, Kecemasan: 3, Stres: 3 },
-    { tanggal: "15/10", Depresi: 4, Kecemasan: 4, Stres: 4 },
+    { tanggal: "01/11", Depresi: 4, Kecemasan: 2, Stres: 4 },
+    { tanggal: "08/11", Depresi: 4, Kecemasan: 3, Stres: 3 },
+    { tanggal: "15/11", Depresi: 4, Kecemasan: 4, Stres: 4 },
 ],
 };
 
@@ -43,23 +45,26 @@ const levelKeterangan = {
 4: "Sangat Berat",
 };
 
-// === Fungsi bantu: generate bulan dari data pertama ke bulan sekarang ===
-const generateMonthListFromData = (riwayatData) => {
+// === API BASE URL ===
+// const API_BASE_URL = "http://10.0.2.2:8000/api"; // ganti sesuai backend kamu
+
 const monthNames = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember",
+"Januari",
+"Februari",
+"Maret",
+"April",
+"Mei",
+"Juni",
+"Juli",
+"Agustus",
+"September",
+"Oktober",
+"November",
+"Desember",
 ];
 
+// === Generate daftar bulan dari data pertama ke sekarang ===
+const generateMonthListFromData = (riwayatData) => {
 const allKeys = Object.keys(riwayatData);
 if (allKeys.length === 0) return [];
 
@@ -88,18 +93,61 @@ return list;
 };
 
 export default function RiwayatPemantauanScreen({ navigation }) {
-const monthList = useMemo(() => generateMonthListFromData(riwayatPerBulan), []);
-const [selectedMonth, setSelectedMonth] = useState(monthList[monthList.length - 1]);
+const [riwayatPerBulan, setRiwayatPerBulan] = useState({});
+const [loading, setLoading] = useState(true);
 
+const monthList = useMemo(
+    () => generateMonthListFromData(riwayatPerBulan),
+    [riwayatPerBulan]
+);
+
+const [selectedMonth, setSelectedMonth] = useState("");
 const scrollRef = useRef(null);
+
+// === Fetch data dari API / fallback ke dummy ===
+useEffect(() => {
+    const fetchData = async () => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/screening/riwayat`);
+        if (!res.ok) throw new Error("Respon server tidak valid");
+        const data = await res.json();
+
+        setRiwayatPerBulan(data);
+        console.log("✅ Data diambil dari API");
+    } catch (error) {
+        console.warn("⚠️ Gagal fetch API, gunakan dummy:", error.message);
+        setRiwayatPerBulan(dummyRiwayatPerBulan);
+    } finally {
+        setLoading(false);
+    }
+    };
+
+    fetchData();
+}, []);
+
+// Set bulan terakhir otomatis
+useEffect(() => {
+    if (monthList.length > 0) {
+    setSelectedMonth(monthList[monthList.length - 1]);
+    }
+}, [monthList]);
 
 useEffect(() => {
     setTimeout(() => {
-    if (scrollRef.current) {
-        scrollRef.current.scrollToEnd({ animated: true });
-    }
+    if (scrollRef.current) scrollRef.current.scrollToEnd({ animated: true });
     }, 300);
-}, []);
+}, [selectedMonth]);
+
+if (loading) {
+    return (
+    <Container>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#534DD9" />
+        <Text style={{ color: "#534DD9", marginTop: 10 }}>Memuat data...</Text>
+        </View>
+    </Container>
+    );
+}
 
 const dataBulanIni = riwayatPerBulan[selectedMonth] || [];
 const chartData = {
@@ -114,9 +162,7 @@ const chartData = {
 
 const isEmpty = dataBulanIni.length === 0;
 
-const handleOpenLink = () => {
-    Linking.openURL("https://linktr.ee/undip.studentcare");
-};
+const handleOpenLink = () => Linking.openURL("https://linktr.ee/undip.studentcare");
 
 return (
     <Container>
@@ -128,7 +174,7 @@ return (
         <Text style={styles.buttonText}>Lakukan Pemantauan</Text>
         </TouchableOpacity>
 
-        {/* === Scroll Bulan === */}
+        {/* === Pilihan bulan === */}
         <ScrollView
         horizontal
         ref={scrollRef}
@@ -197,40 +243,6 @@ return (
         )}
         </Card>
 
-        {/* === Keterangan === */}
-        <Card title="Keterangan">
-        <Text style={styles.text}>
-            <Text style={styles.bold}>Ringan:</Text> Gejala ringan, dapat diatasi
-            dengan relaksasi.
-        </Text>
-        <Text style={styles.text}>
-            <Text style={styles.bold}>Sedang:</Text> Mulai mengganggu aktivitas,
-            disarankan konsultasi.
-        </Text>
-        <Text style={styles.text}>
-            <Text style={styles.bold}>Berat:</Text> Gejala intens, perlu dukungan
-            profesional.
-        </Text>
-        <Text style={styles.text}>
-            <Text style={styles.bold}>Sangat Berat:</Text> Gangguan fungsi harian,
-            butuh psikiater.
-        </Text>
-
-        {/* === Tombol Linktree === */}
-        <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() =>
-            Linking.openURL("https://linktr.ee/undip.studentcare")
-            }
-        >
-            <Text style={styles.linkButtonText}>UNDIP Student Care</Text>
-        </TouchableOpacity>
-        <Text style={styles.infoText}>
-            Klik tombol di atas untuk mendaftar konseling atau melihat layanan
-            mahasiswa lainnya.
-        </Text>
-        </Card>
-
         {/* === Riwayat === */}
         <Card title={`Riwayat Pemantauan ${selectedMonth}`}>
         {isEmpty ? (
@@ -256,6 +268,34 @@ return (
             ))
         )}
         </Card>
+
+        {/* === Link Konseling === */}
+        <Card title="Keterangan">
+        <Text style={styles.text}>
+            <Text style={styles.bold}>Ringan:</Text> Gejala ringan, dapat diatasi
+            dengan relaksasi.
+        </Text>
+        <Text style={styles.text}>
+            <Text style={styles.bold}>Sedang:</Text> Mulai mengganggu aktivitas,
+            disarankan konsultasi.
+        </Text>
+        <Text style={styles.text}>
+            <Text style={styles.bold}>Berat:</Text> Gejala intens, perlu dukungan
+            profesional.
+        </Text>
+        <Text style={styles.text}>
+            <Text style={styles.bold}>Sangat Berat:</Text> Gangguan fungsi harian,
+            butuh psikiater.
+        </Text>
+
+        <TouchableOpacity style={styles.linkButton} onPress={handleOpenLink}>
+            <Text style={styles.linkButtonText}>UNDIP Student Care</Text>
+        </TouchableOpacity>
+        <Text style={styles.infoText}>
+            Klik tombol di atas untuk mendaftar konseling atau melihat layanan mahasiswa
+            lainnya.
+        </Text>
+        </Card>
     </ScrollView>
     </Container>
 );
@@ -266,37 +306,15 @@ scrollContainer: { paddingBottom: 30 },
 button: {
     backgroundColor: "#041062",
     paddingVertical: 12,
-    paddingHorizontal: 20,
     borderRadius: 10,
     alignItems: "center",
     marginBottom: 20,
 },
-    linkButton: {
-    backgroundColor: "#534DD9",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 10,
-    },
-    linkButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
-    },
-    infoText: {
-    fontSize: 12,
-    color: "#555",
-    textAlign: "center",
-    marginTop: 6,
-    },
-
 buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 monthSelector: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 10,
-    paddingHorizontal: 5,
     marginBottom: 10,
 },
 monthButton: {
@@ -309,22 +327,9 @@ monthButton: {
 monthButtonActive: { backgroundColor: "#534DD9" },
 monthText: { color: "#041062", fontSize: 14, fontWeight: "500" },
 monthTextActive: { color: "#fff", fontWeight: "bold" },
-emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 20,
-},
-emptyText: { color: "#777", fontSize: 14, textAlign: "center" },
+emptyContainer: { alignItems: "center", paddingVertical: 20 },
+emptyText: { color: "#777", fontSize: 14 },
 levelNote: { textAlign: "center", fontSize: 12, color: "#555", marginTop: 8 },
-text: { color: "#333", fontSize: 14, marginBottom: 5, lineHeight: 20 },
-bold: { fontWeight: "bold", color: "#041062" },
-link: {
-    color: "#534DD9",
-    textDecorationLine: "underline",
-    marginTop: 10,
-    fontSize: 13,
-},
-infoText: { fontSize: 12, color: "#444", marginTop: 5 },
 historyItem: {
     backgroundColor: "#F4F4FF",
     borderRadius: 10,
@@ -335,4 +340,15 @@ historyItem: {
 },
 historyDate: { fontWeight: "bold", color: "#041062", marginBottom: 4 },
 historyText: { color: "#333", fontSize: 13 },
+linkButton: {
+    backgroundColor: "#534DD9",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+},
+linkButtonText: { color: "#fff", fontWeight: "bold" },
+infoText: { fontSize: 12, color: "#555", textAlign: "center", marginTop: 6 },
+text: { color: "#333", fontSize: 14, marginBottom: 5, lineHeight: 20 },
+bold: { fontWeight: "bold", color: "#041062" },
 });

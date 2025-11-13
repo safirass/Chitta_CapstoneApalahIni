@@ -18,13 +18,9 @@ export default function JournalDetailScreen({ route, navigation }) {
   return (
     <Container>
       <Card title={journal.title}>
-        {/* Gambar thumbnail (bisa diklik) */}
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image source={{ uri: journal.image }} style={styles.image} />
-        </TouchableOpacity>
 
         <Text style={styles.date}>{journal.date}</Text>
-        <Text style={styles.content}>{journal.content}</Text>
+        <Text style={styles.isi_jurnal }>{journal.isi_jurnal}</Text>
 
         <TouchableOpacity
           style={styles.editButton}
@@ -53,13 +49,6 @@ export default function JournalDetailScreen({ route, navigation }) {
         animationType="fade"
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable style={styles.modalContainer} onPress={() => setModalVisible(false)}>
-          <Image
-            source={{ uri: journal.image }}
-            style={styles.fullImage}
-            resizeMode="contain"
-          />
-        </Pressable>
       </Modal>
     </Container>
   );

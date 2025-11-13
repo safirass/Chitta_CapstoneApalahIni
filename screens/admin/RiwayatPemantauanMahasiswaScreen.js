@@ -2,15 +2,15 @@
 
 import { useState, useMemo, useEffect } from "react"
 import {
-View,
-Text,
-StyleSheet,
-ScrollView,
-TouchableOpacity,
-Modal,
-TextInput,
-ActivityIndicator,
-Linking,
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    Modal,
+    TextInput,
+    ActivityIndicator,
+    Linking,
 } from "react-native"
 import Container from "../../components/container"
 import Card from "../../components/card"
@@ -19,7 +19,7 @@ import API from "../../data/MahasiswaDummy"
 export default function RiwayatPemantauanMahasiswaScreen() {
 const [riwayatData, setRiwayatData] = useState([])
 const [loading, setLoading] = useState(true)
-const [sortOrder, setSortOrder] = useState("desc") // desc = terbaru dulu, asc = terlama dulu
+const [sortOrder, setSortOrder] = useState("desc") // desc = terbaru dulu
 const [searchQuery, setSearchQuery] = useState("")
 const [selectedRiwayat, setSelectedRiwayat] = useState(null)
 const [modalVisible, setModalVisible] = useState(false)
@@ -27,18 +27,32 @@ const [modalVisible, setModalVisible] = useState(false)
 useEffect(() => {
     const fetchData = async () => {
     try {
-        const data = await API.getAllRiwayat()
-        // Urutkan dari terbaru ke terlama langsung di awal
-        const sortedData = data.sort(
-        (a, b) => new Date(b.tanggal) - new Date(a.tanggal)
+            const mahasiswa = await API.getAllMahasiswa()
+            const flatRiwayat = mahasiswa.flatMap((m) =>
+            m.riwayat.map((r) => ({
+                ...r,
+                nama: m.nama,
+                nim: m.nim,
+                whatsapp: m.whatsapp,
+                email: m.email,
+            }))
+            )
+
+        // Sort dari terbaru ke terlama (tanggal DD-MM-YYYY)
+        flatRiwayat.sort(
+        (a, b) =>
+            new Date(b.tanggal.split("-").reverse().join("-")) -
+            new Date(a.tanggal.split("-").reverse().join("-"))
         )
-        setRiwayatData(sortedData)
+
+        setRiwayatData(flatRiwayat)
     } catch (err) {
         console.error("Gagal ambil data:", err)
     } finally {
         setLoading(false)
     }
     }
+
     fetchData()
 }, [])
 
@@ -54,11 +68,13 @@ const filteredRiwayat = useMemo(() => {
     )
     }
 
-    // Sort berdasarkan tanggal terbaru / terlama
+    // Sort
     data.sort((a, b) =>
     sortOrder === "desc"
-        ? new Date(b.tanggal) - new Date(a.tanggal)
-        : new Date(a.tanggal) - new Date(b.tanggal)
+        ? new Date(b.tanggal.split("-").reverse().join("-")) -
+        new Date(a.tanggal.split("-").reverse().join("-"))
+        : new Date(a.tanggal.split("-").reverse().join("-")) -
+        new Date(b.tanggal.split("-").reverse().join("-"))
     )
 
     return data
@@ -117,7 +133,7 @@ return (
         </TouchableOpacity>
         </View>
 
-        {/* Loading Indicator */}
+        {/* Loading */}
         {loading ? (
         <View style={{ alignItems: "center", marginTop: 40 }}>
             <ActivityIndicator size="large" color="#534DD9" />
@@ -126,7 +142,9 @@ return (
         <Card title={`Riwayat Pemantauan (${filteredRiwayat.length})`}>
             {filteredRiwayat.length === 0 ? (
             <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>Tidak ada riwayat yang ditemukan</Text>
+                <Text style={styles.emptyText}>
+                Tidak ada riwayat yang ditemukan
+                </Text>
             </View>
             ) : (
             <View>
@@ -136,10 +154,12 @@ return (
                 <Text style={[styles.tableCell, styles.dateCell]}>
                     Tanggal Pemantauan
                 </Text>
-                <Text style={[styles.tableCell, styles.actionCell]}>Detail</Text>
+                <Text style={[styles.tableCell, styles.actionCell]}>
+                    Detail
+                </Text>
                 </View>
 
-                {/* Isi Tabel */}
+                {/* Rows */}
                 {filteredRiwayat.map((riwayat) => (
                 <TouchableOpacity
                     key={riwayat.id}
@@ -156,7 +176,11 @@ return (
                     {riwayat.tanggal}
                     </Text>
                     <Text
-                    style={[styles.tableCell, styles.actionCell, styles.actionText]}
+                    style={[
+                        styles.tableCell,
+                        styles.actionCell,
+                        styles.actionText,
+                    ]}
                     >
                     Buka
                     </Text>
@@ -168,7 +192,7 @@ return (
         )}
     </ScrollView>
 
-    {/* Modal Detail Riwayat */}
+    {/* Modal Detail */}
     <Modal
         visible={modalVisible}
         transparent
@@ -203,7 +227,6 @@ return (
 
                 {/* Kontak */}
                 <View style={{ marginTop: 15 }}>
-                {/* WhatsApp */}
                 <TouchableOpacity
                     style={{
                     backgroundColor: "#25D366",
@@ -212,15 +235,17 @@ return (
                     marginBottom: 10,
                     alignItems: "center",
                     }}
-                    onPress={() => {
-                    const waNumber = "+628123456789"; // ganti dengan nomor mahasiswa
-                    Linking.openURL(`https://wa.me/${waNumber}`);
-                    }}
+                    onPress={() =>
+                    Linking.openURL(
+                        `https://wa.me/${selectedRiwayat.whatsapp}`
+                    )
+                    }
                 >
-                    <Text style={{ color: "#fff", fontWeight: "bold" }}>Chat WA</Text>
+                    <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                    Chat WA
+                    </Text>
                 </TouchableOpacity>
 
-                {/* Email */}
                 <TouchableOpacity
                     style={{
                     backgroundColor: "#534DD9",
@@ -229,38 +254,35 @@ return (
                     alignItems: "center",
                     marginBottom: 20,
                     }}
-                    onPress={() => {
-                    const email = "mahasiswa@email.com"; // ganti dengan email mahasiswa
-                    Linking.openURL(`mailto:${email}`);
-                    }}
+                    onPress={() =>
+                    Linking.openURL(`mailto:${selectedRiwayat.email}`)
+                    }
                 >
-                    <Text style={{ color: "#fff", fontWeight: "bold" }}>Kirim Email</Text>
+                    <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                    Kirim Email
+                    </Text>
                 </TouchableOpacity>
                 </View>
 
-                {/* Detail Riwayat Pemantauan */}
+                {/* Detail Riwayat */}
                 <Card title="Detail Pemantauan">
-                {selectedRiwayat.riwayatDetail
-                    .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
-                    .map((detail, index) => (
-                    <View key={index} style={styles.detailItem}>
-                        <Text style={styles.detailDate}>
-                        Tanggal: {detail.tanggal}
-                        </Text>
-                        <View style={styles.detailContent}>
-                        <Text style={styles.detailLabel}>
-                            Depresi: {detail.depresi} (Level {detail.depresiLevel})
-                        </Text>
-                        <Text style={styles.detailLabel}>
-                            Kecemasan: {detail.kecemasan} (Level{" "}
-                            {detail.kecemAsanLevel})
-                        </Text>
-                        <Text style={styles.detailLabel}>
-                            Stres: {detail.stres} (Level {detail.stresLevel})
-                        </Text>
-                        </View>
-                    </View>
-                    ))}
+                <View style={styles.detailItem}>
+                    <Text style={styles.detailDate}>
+                    Tanggal: {selectedRiwayat.tanggal}
+                    </Text>
+                    <Text style={styles.detailLabel}>
+                    Depresi: {selectedRiwayat.depresi} (Level{" "}
+                    {selectedRiwayat.depresiLevel})
+                    </Text>
+                    <Text style={styles.detailLabel}>
+                    Kecemasan: {selectedRiwayat.kecemasan} (Level{" "}
+                    {selectedRiwayat.kecemasanLevel})
+                    </Text>
+                    <Text style={styles.detailLabel}>
+                    Stres: {selectedRiwayat.stres} (Level{" "}
+                    {selectedRiwayat.stresLevel})
+                    </Text>
+                </View>
                 </Card>
             </ScrollView>
             )}

@@ -8,9 +8,71 @@ Dimensions,
 TouchableOpacity,
 Linking,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
+// Import useNavigation untuk mendapatkan objek navigasi
+import { useRoute, useNavigation } from "@react-navigation/native"; 
 import { BarChart } from "react-native-chart-kit";
-import { rekomendasiDASS } from "../../data/rekomendasiDASS";
+// Import Icon. (Asumsi: Anda menggunakan Ionicons dari @expo/vector-icons)
+import { Ionicons } from '@expo/vector-icons'; 
+
+
+// === Dummy rekomendasiDASS (Tidak Berubah) ===
+const rekomendasiDASS = {
+Depresi: {
+    Ringan: {
+    gejala: "Merasa sedikit kehilangan minat, namun masih bisa beraktivitas.",
+    rekomendasi: "Coba lakukan aktivitas positif seperti olahraga ringan atau journaling.",
+    },
+    Sedang: {
+    gejala: "Mulai kehilangan motivasi dan mudah merasa lelah.",
+    rekomendasi: "Cobalah berbicara dengan teman dekat atau konselor UPT.",
+    },
+    Berat: {
+    gejala: "Kesulitan tidur, kehilangan harapan, merasa hampa.",
+    rekomendasi:
+        "Segera hubungi tenaga profesional atau layanan konseling kampus.",
+    },
+    "Sangat Berat": {
+    gejala: "Perasaan putus asa yang sangat kuat, tidak bersemangat hidup.",
+    rekomendasi: "Wajib segera melakukan konseling di UPT LKDPDEM UNDIP.",
+    },
+},
+Kecemasan: {
+    Ringan: {
+    gejala: "Kadang merasa khawatir terhadap hal kecil.",
+    rekomendasi: "Latihan pernapasan dan mindfulness dapat membantu.",
+    },
+    Sedang: {
+    gejala: "Sering merasa gelisah tanpa alasan jelas.",
+    rekomendasi: "Coba lakukan relaksasi teratur dan kurangi konsumsi kafein.",
+    },
+    Berat: {
+    gejala: "Sulit berkonsentrasi dan sering panik.",
+    rekomendasi: "Konsultasikan ke profesional bila gejala berlanjut.",
+    },
+    "Sangat Berat": {
+    gejala: "Sering merasa takut ekstrem dan sulit mengendalikan diri.",
+    rekomendasi: "Butuh penanganan psikolog atau psikiater.",
+    },
+},
+Stres: {
+    Ringan: {
+    gejala: "Merasa tertekan sesekali, tetapi masih bisa mengatasinya.",
+    rekomendasi: "Istirahat cukup dan atur waktu belajar lebih baik.",
+    },
+    Sedang: {
+    gejala: "Mudah marah dan sulit tidur karena beban pikiran.",
+    rekomendasi: "Luangkan waktu untuk rekreasi dan berolahraga.",
+    },
+    Berat: {
+    gejala: "Sering tegang dan sulit fokus dalam aktivitas sehari-hari.",
+    rekomendasi: "Lakukan relaksasi rutin atau meditasi ringan setiap hari.",
+    },
+    "Sangat Berat": {
+    gejala: "Kelelahan ekstrem dan kehilangan kendali emosi.",
+    rekomendasi: "Hubungi konselor segera untuk mendapatkan dukungan profesional.",
+    },
+},
+};
 
 const screenWidth = Dimensions.get("window").width - 30;
 const levelKeterangan = {
@@ -20,7 +82,7 @@ const levelKeterangan = {
 4: "Sangat Berat",
 };
 
-// Fungsi untuk menentukan warna berdasarkan kategori
+// Fungsi untuk menentukan warna kategori (Tidak berubah)
 const getKategoriColor = (kategori) => {
 switch (kategori) {
     case "Ringan":
@@ -32,14 +94,30 @@ switch (kategori) {
     case "Sangat Berat":
     return "#E74C3C"; // merah
     default:
-    return "#333"; // default hitam
+    return "#333";
 }
 };
 
 export default function HasilPemantauanScreen() {
 const route = useRoute();
+// Panggil useNavigation untuk mendapatkan akses ke navigasi
+const navigation = useNavigation();
+
+// === FUNGSI NAVIGASI YANG DIUBAH ===
+const handleGoBack = () => {
+    // Navigasi eksplisit ke screen 'Pemantauan Mahasiswa'
+    navigation.navigate('Pemantauan Mahasiswa');
+};
+// ====================================
+
+// === Data hasil pemantauan (menggunakan data dari route.params atau fallback) ===
 const { data } = route.params || {
-    data: { tanggal: "17/11", Depresi: 2, Kecemasan: 1, Stres: 3 },
+    data: {
+    tanggal: "17/11",
+    Depresi: 2,
+    Kecemasan: 3,
+    Stres: 1,
+    },
 };
 
 const barData = {
@@ -53,10 +131,25 @@ const handleOpenLink = () => {
 
 return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer}>
-    {/* Grafik */}
+    {/* === Grafik === */}
     <View style={styles.card}>
-        <Text style={styles.title}>Hasil Pemantauan</Text>
-        <Text style={styles.subtitle}>Tanggal: {data.tanggal}</Text>
+        {/* === HEADER NAVIGASI BARU === */}
+        <View style={styles.headerContainer}>
+            {/* Tombol Back/Kembali */}
+            <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#041062" /> 
+            </TouchableOpacity>
+            
+            {/* Teks Judul dan Subtitle berada di tengah */}
+            <View style={styles.headerTextContainer}>
+                <Text style={styles.title}>Hasil Pemantauan DASS</Text> 
+                <Text style={styles.subtitle}>Tanggal: {data.tanggal}</Text>
+            </View>
+            
+            {/* Spacer: Memberikan ruang kosong yang sama dengan tombol back agar teks di tengah */}
+            <View style={{ width: 24 }} /> 
+        </View>
+        {/* === AKHIR HEADER NAVIGASI BARU === */}
 
         <BarChart
         data={barData}
@@ -82,11 +175,16 @@ return (
         </Text>
     </View>
 
-    {/* Penjelasan tiap domain */}
+    {/* === Detail Domain (Tidak Berubah) === */}
     {["Depresi", "Kecemasan", "Stres"].map((domain) => {
         const level = data[domain];
         const kategori = levelKeterangan[level];
-        const rekom = rekomendasiDASS[domain][kategori];
+        const rekom =
+        rekomendasiDASS?.[domain]?.[kategori] || {
+            gejala: "Data belum tersedia.",
+            rekomendasi: "Silakan konsultasi dengan UPT LKDPDEM.",
+        };
+
         return (
         <View key={domain} style={styles.section}>
             <Text style={styles.sectionTitle}>{domain}</Text>
@@ -104,7 +202,7 @@ return (
         );
     })}
 
-    {/* Kutipan & link */}
+    {/* === Quote & Link (Tidak Berubah) === */}
     <View style={styles.section}>
         <Text style={styles.text}>
         "Kehidupan yang baik adalah sebuah proses, bukan suatu keadaan yang ada dengan
@@ -131,12 +229,30 @@ card: {
     backgroundColor: "#FFF",
     padding: 15,
     borderRadius: 10,
-    alignItems: "center",
     marginBottom: 20,
 },
-title: { fontSize: 18, fontWeight: "bold", color: "#041062" },
-subtitle: { fontSize: 14, color: "#666", marginBottom: 10 },
-levelNote: { marginTop: 8, fontSize: 12, color: "#666" },
+
+// *** STYLES BARU UNTUK HEADER NAVIGASI ***
+headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', 
+    marginBottom: 10, 
+    width: '100%',
+},
+backButton: {
+    padding: 5, 
+    marginRight: 10, 
+},
+headerTextContainer: {
+    flex: 1, 
+    alignItems: 'center', 
+},
+// *** AKHIR STYLES BARU ***
+
+title: { fontSize: 18, fontWeight: "bold", color: "#041062", textAlign: 'center' },
+subtitle: { fontSize: 14, color: "#666", marginBottom: 10, textAlign: 'center' },
+levelNote: { marginTop: 8, fontSize: 12, color: "#666", textAlign: 'center' },
 section: {
     backgroundColor: "#FFF",
     padding: 15,

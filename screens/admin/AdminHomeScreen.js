@@ -10,7 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import Container from "../../components/container";
 import Card from "../../components/card";
 
-export default function AdminHomeScreen({ setIsLoggedIn, userData }) {
+export default function AdminHomeScreen({ setIsLoggedIn, setUserRole, setUserData, userData}) {
 const navigation = useNavigation();
 const [greeting, setGreeting] = useState("");
 
@@ -23,10 +23,18 @@ useEffect(() => {
 }, []);
 
 const handleLogout = () => {
-    Alert.alert("Konfirmasi Logout", "Apakah Anda yakin ingin keluar?", [
+Alert.alert("Konfirmasi Logout", "Apakah Anda yakin ingin keluar?", [
     { text: "Batal", style: "cancel" },
-    { text: "Ya, Logout", onPress: () => setIsLoggedIn(false) },
-    ]);
+    {
+    text: "Ya, Logout",
+    onPress: () => {
+        setIsLoggedIn(false);
+        setUserRole(null);  
+        setUserData(null);  
+    },
+    style: "destructive",
+    },
+]);
 };
 
 const namaAdmin = userData?.nama || "Admin UNDIP";

@@ -59,7 +59,7 @@ useEffect(() => {
     }
 }, [])
 
-useEffect(() => {
+useEffect(() => { 
     if (scrollRef.current && selectedData?.hourly?.length > 0) {
     setTimeout(() => {
         scrollRef.current.scrollToEnd({ animated: true })

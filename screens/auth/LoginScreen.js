@@ -14,23 +14,22 @@ ActivityIndicator,
 import axios from "axios";
 
 export default function LoginScreen({ navigation, setIsLoggedIn, setUserRole, setUserData }) {
-const [id, setId] = useState(""); // bisa NIM atau NIP
+const [id, setId] = useState("");
 const [password, setPassword] = useState("");
 const [loading, setLoading] = useState(false);
 
-// === Ganti ke alamat backend nanti ===
 const API_BASE_URL = "http://10.0.2.2:8000/api";
 
-// === DUMMY USERS (sementara) ===
+
 const dummyUsers = [
     {
-    id: "21120122140147", // Mahasiswa pakai NIM
+    id: "21120122140147", //nim 
     password: "12345",
     nama: "Safira Septiandika Salsabila",
     role: "user",
     },
     {
-    id: "00000", // Admin pakai NIP
+    id: "00000", //nip
     password: "admin",
     nama: "Admin UPT LKDPDEM",
     role: "admin",
@@ -42,8 +41,7 @@ const handleLogin = async () => {
     Alert.alert("Peringatan", "Silakan isi NIM/NIP dan Password terlebih dahulu!");
     return;
     }
-
-    // 🟢 CEK DUMMY DULU (biar cepat login tanpa backend)
+//ini nanti apus aja kalau backend udah jalan
     const user = dummyUsers.find((u) => u.id === id && u.password === password);
 
     if (user) {
@@ -51,11 +49,10 @@ const handleLogin = async () => {
     setIsLoggedIn(true);
     setUserRole(user.role);
     setUserData(user);
-    navigation.replace("Home");
-    return; // stop di sini kalau pakai dummy
+    return; //dummy
     }
 
-    // 🟡 Kalau backend sudah aktif → kirim ke endpoint login
+
     setLoading(true);
     try {
     // Tentukan apakah input berupa NIM (angka panjang) atau NIP (admin)
@@ -65,17 +62,6 @@ const handleLogin = async () => {
         : { nip: id, password }; // admin
 
     const res = await axios.post(`${API_BASE_URL}/auth/login`, payload);
-
-    // Contoh respons backend (C300):
-    // {
-    //   "status": "success",
-    //   "data": {
-    //     "nama": "Safira",
-    //     "nim": "21120122140147",
-    //     "role": "user",
-    //     "token": "eyJhbGciOi..."
-    //   }
-    // }
 
     const { data } = res.data;
     Alert.alert("Berhasil", `Selamat datang, ${data.nama}!`);

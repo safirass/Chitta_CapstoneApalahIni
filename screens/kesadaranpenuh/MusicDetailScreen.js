@@ -9,7 +9,6 @@ const [sound, setSound] = useState(null);
 const [isPlaying, setIsPlaying] = useState(false);
 
 useEffect(() => {
-    // Bersihkan audio saat keluar halaman
     return () => {
     if (sound) {
         sound.unloadAsync();

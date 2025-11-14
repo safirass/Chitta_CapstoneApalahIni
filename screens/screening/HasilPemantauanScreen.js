@@ -8,14 +8,10 @@ Dimensions,
 TouchableOpacity,
 Linking,
 } from "react-native";
-// Import useNavigation untuk mendapatkan objek navigasi
 import { useRoute, useNavigation } from "@react-navigation/native"; 
 import { BarChart } from "react-native-chart-kit";
-// Import Icon. (Asumsi: Anda menggunakan Ionicons dari @expo/vector-icons)
 import { Ionicons } from '@expo/vector-icons'; 
 
-
-// === Dummy rekomendasiDASS (Tidak Berubah) ===
 const rekomendasiDASS = {
 Depresi: {
     Ringan: {
@@ -100,17 +96,8 @@ switch (kategori) {
 
 export default function HasilPemantauanScreen() {
 const route = useRoute();
-// Panggil useNavigation untuk mendapatkan akses ke navigasi
 const navigation = useNavigation();
 
-// === FUNGSI NAVIGASI YANG DIUBAH ===
-const handleGoBack = () => {
-    // Navigasi eksplisit ke screen 'Pemantauan Mahasiswa'
-    navigation.navigate('Pemantauan Mahasiswa');
-};
-// ====================================
-
-// === Data hasil pemantauan (menggunakan data dari route.params atau fallback) ===
 const { data } = route.params || {
     data: {
     tanggal: "17/11",
@@ -131,25 +118,19 @@ const handleOpenLink = () => {
 
 return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer}>
-    {/* === Grafik === */}
+
     <View style={styles.card}>
-        {/* === HEADER NAVIGASI BARU === */}
         <View style={styles.headerContainer}>
-            {/* Tombol Back/Kembali */}
-            <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+            <TouchableOpacity onPress={() => navigation.navigate("Pemantauan Mahasiswa", { userData })} style={styles.backButton}>
                 <Ionicons name="arrow-back" size={24} color="#041062" /> 
             </TouchableOpacity>
             
-            {/* Teks Judul dan Subtitle berada di tengah */}
             <View style={styles.headerTextContainer}>
-                <Text style={styles.title}>Hasil Pemantauan DASS</Text> 
+                <Text style={styles.title}>Hasil Pemantauan</Text> 
                 <Text style={styles.subtitle}>Tanggal: {data.tanggal}</Text>
             </View>
-            
-            {/* Spacer: Memberikan ruang kosong yang sama dengan tombol back agar teks di tengah */}
             <View style={{ width: 24 }} /> 
         </View>
-        {/* === AKHIR HEADER NAVIGASI BARU === */}
 
         <BarChart
         data={barData}
@@ -175,7 +156,6 @@ return (
         </Text>
     </View>
 
-    {/* === Detail Domain (Tidak Berubah) === */}
     {["Depresi", "Kecemasan", "Stres"].map((domain) => {
         const level = data[domain];
         const kategori = levelKeterangan[level];
@@ -202,7 +182,6 @@ return (
         );
     })}
 
-    {/* === Quote & Link (Tidak Berubah) === */}
     <View style={styles.section}>
         <Text style={styles.text}>
         "Kehidupan yang baik adalah sebuah proses, bukan suatu keadaan yang ada dengan
@@ -232,7 +211,6 @@ card: {
     marginBottom: 20,
 },
 
-// *** STYLES BARU UNTUK HEADER NAVIGASI ***
 headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -248,7 +226,6 @@ headerTextContainer: {
     flex: 1, 
     alignItems: 'center', 
 },
-// *** AKHIR STYLES BARU ***
 
 title: { fontSize: 18, fontWeight: "bold", color: "#041062", textAlign: 'center' },
 subtitle: { fontSize: 14, color: "#666", marginBottom: 10, textAlign: 'center' },

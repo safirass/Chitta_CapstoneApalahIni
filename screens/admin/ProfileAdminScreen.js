@@ -13,8 +13,9 @@ import Card from "../../components/card";
 
 const API_BASE_URL = "http://10.0.2.2:8000/api";
 
-export default function ProfileAdminScreen({ navigation, route, setIsLoggedIn }) {
+export default function ProfileAdminScreen({ route, setIsLoggedIn ,setUserRole, setUserData }) {
 const { userData } = route.params || {};
+
 // const [profileData, setProfileData] = useState(null);
 // const [loading, setLoading] = useState(true);
 
@@ -44,17 +45,18 @@ const [profileData, setProfileData] = useState({
 // }, [userData]);
 
 const handleLogout = () => {
-    Alert.alert("Konfirmasi Logout", "Apakah Anda yakin ingin keluar?", [
+Alert.alert("Konfirmasi Logout", "Apakah Anda yakin ingin keluar?", [
     { text: "Batal", style: "cancel" },
     {
-        text: "Ya, Logout",
-        onPress: () => {
+    text: "Ya, Logout",
+    onPress: () => {
         setIsLoggedIn(false);
-        navigation.replace('Login');
-        },
-        style: "destructive",
+        setUserRole(null);  
+        setUserData(null);  
     },
-    ]);
+    style: "destructive",
+    },
+]);
 };
 
 // if (loading) {

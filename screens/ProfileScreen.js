@@ -13,9 +13,7 @@ import Container from "../components/container";
 import Card from "../components/card";
 
 const API_BASE_URL = "http://10.0.2.2:8000/api";
-
-export default function ProfileScreen({ navigation, route, setIsLoggedIn }) {
-const { userData } = route.params || {}; // Data login dikirim dari LoginScreen
+export default function ProfileScreen({userData, setIsLoggedIn, setUserRole, setUserData }) {
 const [profileData, setProfileData] = useState(null);
 const [loading, setLoading] = useState(true);
 
@@ -32,6 +30,7 @@ useEffect(() => {
     });
     setLoading(false);
 }, [userData]);
+
 // ini kalo dah konek ke db aktifin aja
 // useEffect(() => {
 //     const fetchProfile = async () => {
@@ -60,18 +59,20 @@ useEffect(() => {
 // }, [userData]);
 
 const handleLogout = () => {
-    Alert.alert("Konfirmasi Logout", "Apakah Anda yakin ingin keluar?", [
+Alert.alert("Konfirmasi Logout", "Apakah Anda yakin ingin keluar?", [
     { text: "Batal", style: "cancel" },
     {
-        text: "Ya, Logout",
-        onPress: () => {
+    text: "Ya, Logout",
+    onPress: () => {
         setIsLoggedIn(false);
-        navigation.replace('Login');
-        },
-        style: "destructive",
+        setUserRole(null);  
+        setUserData(null);  
     },
-    ]);
+    style: "destructive",
+    },
+]);
 };
+
 
 if (loading) {
     return (

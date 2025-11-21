@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState, useRef } from "react";
 import {
 View,
@@ -7,11 +5,11 @@ Text,
 StyleSheet,
 ScrollView,
 TouchableOpacity,
+Platform,
 } from "react-native";
 
 import Container from "../components/container";
 import Card from "../components/card";
-import { readRecords } from "expo-health-connect";
 
 export default function PemantauanStresScreen({ navigation }) {
 const [stressData, setStressData] = useState([]);
@@ -24,6 +22,15 @@ const dateScrollRef = useRef(null);
 useEffect(() => {
     async function loadData() {
     try {
+        if (Platform.OS !== "android") {
+        console.log("Health Connect hanya untuk Android");
+        return;
+        }
+
+        // dynamic import supaya bundler iOS/Web tidak crash
+        const HC = await import("expo-health-connect");
+        const readRecords = HC.readRecords;
+
         const result = await readRecords("heartRate");
 
         // group by date
@@ -47,7 +54,6 @@ useEffect(() => {
         });
         });
 
-        // convert ke array
         const final = Object.keys(grouped).map((date) => ({
         date,
         hourly: grouped[date],
@@ -107,7 +113,7 @@ return (
         </ScrollView>
         </View>
 
-        {/* Chart Stress */}
+        {/* Chart */}
         {selectedData && (
         <Card style={styles.graphCard} type="info">
             <Text style={styles.title}>Riwayat Stres {selectedDate}</Text>
@@ -164,7 +170,7 @@ return (
         </Card>
         )}
 
-        {/* LINKS */}
+        {/* Links */}
         <Card style={styles.linkCard}>
         <TouchableOpacity onPress={() => navigation.navigate("Kesadaran Penuh")}>
             <Text style={styles.linkTitle}>Kesadaran Penuh {">"}</Text>

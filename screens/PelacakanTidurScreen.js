@@ -6,11 +6,11 @@ StyleSheet,
 ScrollView,
 TouchableOpacity,
 ActivityIndicator,
+Platform,
 } from "react-native";
 
 import Container from "../components/container";
 import Card from "../components/card";
-import { readRecords } from "expo-health-connect";
 
 export default function PelacakanTidurScreen({ navigation }) {
 const [sleepData, setSleepData] = useState(null);
@@ -21,6 +21,17 @@ const scrollViewRef = useRef(null);
 useEffect(() => {
     async function loadSleep() {
     try {
+        if (Platform.OS !== "android") {
+        console.log("Sleep tracking hanya untuk Android");
+        setSleepData(null);
+        setLoading(false);
+        return;
+        }
+
+        // ⬇️ dynamic import
+        const HC = await import("expo-health-connect");
+        const readRecords = HC.readRecords;
+
         const result = await readRecords("sleepSession");
 
         const mapped = result.records.map((r) => {
@@ -34,9 +45,15 @@ useEffect(() => {
             day: "2-digit",
             month: "2-digit",
             }),
-            hours: hours,
-            start: start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
-            end: end.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+            hours,
+            start: start.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+            }),
+            end: end.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+            }),
         };
         });
 
@@ -88,7 +105,6 @@ const getSleepMessage = (hours) => {
 
 return (
     <Container>
-    {/* Chart */}
     <Card title="Grafik Pelacakan Tidur" type="info">
         <ScrollView
         ref={scrollViewRef}
@@ -122,13 +138,14 @@ return (
         </ScrollView>
     </Card>
 
-    {/* Detail */}
     <Card title="Durasi Tidur Hari Ini">
         <Text style={styles.duration}>{selectedData?.hours.toFixed(1)} jam</Text>
         <Text style={styles.subText}>
         {selectedData?.start} - {selectedData?.end}
         </Text>
-        <Text style={styles.subText}>{getSleepMessage(selectedData?.hours)}</Text>
+        <Text style={styles.subText}>
+        {getSleepMessage(selectedData?.hours)}
+        </Text>
     </Card>
 
     <Card title="Tips Tidur">

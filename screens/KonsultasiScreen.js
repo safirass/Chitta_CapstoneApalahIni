@@ -12,7 +12,6 @@ ActivityIndicator,
 Modal,
 } from 'react-native';
 
-// Dummy AI response
 const getDummyAIResponse = (userMessage) => {
 const lowerMessage = userMessage.toLowerCase().trim();
 if (lowerMessage.includes('halo') || lowerMessage.includes('hi')) return 'Halo juga! Apa kabar?';

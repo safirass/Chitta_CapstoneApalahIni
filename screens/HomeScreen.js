@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-View,
-Text,
-StyleSheet,
-TouchableOpacity,
-Image,
-ScrollView,
-Linking,
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    ScrollView,
+    Linking,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Container from "../components/container";
@@ -32,6 +32,14 @@ useEffect(() => {
 
 const namaUser = userData?.nama || "Warga UNDIP";
 const fotoUser = userData?.foto || null;
+const FeatureButton = ({ icon, label, color, onPress }) => (
+<TouchableOpacity style={styles.featureButton} onPress={onPress}>
+    <View style={[styles.iconContainer, { backgroundColor: color }]}>
+    <Icon name={icon} size={28} color="#fff" />
+    </View>
+    <Text style={styles.featureLabel}>{label}</Text>
+</TouchableOpacity>
+);
 
 return (
     <Container>
@@ -55,7 +63,6 @@ return (
         </View>
         </TouchableOpacity>
 
-        {/* Chat AI */}
         <Card
         title="Mulai Mengobrol dengan Chat AI"
         description="Asisten AI kami siap menemanimu berbagi cerita dan memberikan saran."
@@ -69,13 +76,11 @@ return (
         </TouchableOpacity>
         </Card>
 
-        {/* === CARD FITUR === */}
         <Card
         title="Fitur Kesehatan Mental"
         description="Gunakan berbagai fitur untuk mendukung kesehatan mentalmu."
         >
         <View style={styles.featureGrid}>
-            {/* Kesadaran Penuh */}
             <FeatureButton
             icon="meditation"
             label="Kesadaran Penuh"
@@ -85,7 +90,6 @@ return (
             }
             />
 
-            {/* Pemantauan Stres */}
             <FeatureButton
             icon="brain"
             label="Pemantauan Stres"
@@ -95,7 +99,7 @@ return (
             }
             />
 
-            {/* Pelacakan Tidur */}
+
             <FeatureButton
             icon="sleep"
             label="Pelacakan Tidur"
@@ -105,7 +109,6 @@ return (
             }
             />
 
-            {/* Pemantauan Mahasiswa */}
             <FeatureButton
             icon="clipboard-text"
             label="Pemantauan Mahasiswa"
@@ -117,7 +120,6 @@ return (
         </View>
         </Card>
 
-        {/* Info UPT LKDPDEM */}
         <Card
         title="UPT LKDPDEM"
         description="[UPT Layanan Konsultasi, Disabilitas, Penegakan Disiplin, dan Etika Mahasiswa UNDIP]"
@@ -142,15 +144,7 @@ return (
 );
 }
 
-/* Komponen tombol fitur */
-const FeatureButton = ({ icon, label, color, onPress }) => (
-<TouchableOpacity style={styles.featureButton} onPress={onPress}>
-    <View style={[styles.iconContainer, { backgroundColor: color }]}>
-    <Icon name={icon} size={28} color="#fff" />
-    </View>
-    <Text style={styles.featureLabel}>{label}</Text>
-</TouchableOpacity>
-);
+
 
 const styles = StyleSheet.create({
 header: {

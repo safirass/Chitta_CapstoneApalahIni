@@ -12,6 +12,29 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "expo-health-connect",
+        {
+          "permissions": [
+            "read_sleep",
+            "read_stress",
+            "read_heart_rate",
+            "read_steps"
+          ]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 26
+          }
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "runtimeVersion": {

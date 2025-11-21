@@ -4,14 +4,13 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 export default function SplashScreen({ navigation }) {
 return (
     <View style={styles.container}>
-    {/* Logo */}
+
     <Image
         source={require('../../assets/chitta.png')}
         style={styles.logo}
         resizeMode="contain"
     />
 
-    {/* Selamat Datang */}
     <Text style={styles.welcome}>SELAMAT DATANG</Text>
 
     {/* Tombol Login */}

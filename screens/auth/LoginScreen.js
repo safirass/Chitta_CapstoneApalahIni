@@ -23,14 +23,14 @@ const API_BASE_URL = "http://10.0.2.2:8000/api";
 
 const dummyUsers = [
     {
-    id: "21120122140147", //nim 
-    password: "12345",
+    id: "1", //nim 
+    password: "1",
     nama: "Safira Septiandika Salsabila",
     role: "user",
     },
     {
-    id: "00000", //nip
-    password: "admin",
+    id: "2", //nip
+    password: "2",
     nama: "Admin UPT LKDPDEM",
     role: "admin",
     },
@@ -55,7 +55,6 @@ const handleLogin = async () => {
 
     setLoading(true);
     try {
-    // Tentukan apakah input berupa NIM (angka panjang) atau NIP (admin)
     const payload =
         id.length > 5
         ? { nim: id, password } // mahasiswa

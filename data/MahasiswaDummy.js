@@ -108,7 +108,7 @@ const MAHASISWA_DATA = [
 },
 ];
 
-// API simulasi untuk ambil data
+// API simulasi
 export const API = {
 getAllMahasiswa: async () =>
     new Promise((resolve) => setTimeout(() => resolve(MAHASISWA_DATA), 300)),

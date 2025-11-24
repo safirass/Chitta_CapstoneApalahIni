@@ -2,7 +2,6 @@ import { useState } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-
 import HomeScreen from "./screens/HomeScreen"
 import ProfileScreen from "./screens/ProfileScreen"
 import KesadaranPenuhScreen from "./screens/KesadaranPenuhScreen"
@@ -26,7 +25,6 @@ import LoginScreen from "./screens/auth/LoginScreen"
 import RegisterScreen from "./screens/auth/RegisterScreen"
 import RegisterDetailScreen from "./screens/auth/RegisterDetailScreen"
 
-
 import AdminHomeScreen from "./screens/admin/AdminHomeScreen"
 import RiwayatPemantauanMahasiswaScreen from "./screens/admin/RiwayatPemantauanMahasiswaScreen"
 import DaftarMahasiswaDetailScreen from "./screens/admin/DaftarMahasiswaDetailScreen"
@@ -49,8 +47,13 @@ export default function App() {
         }}
       >
         {!isLoggedIn ? (
+          // ===================== AUTH ROUTES =====================
           <>
-            <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
+            <Stack.Screen 
+              name="Splash" 
+              component={SplashScreen} 
+              options={{ headerShown: false }} 
+            />
             <Stack.Screen name="Login">
               {(props) => (
                 <LoginScreen
@@ -61,22 +64,41 @@ export default function App() {
                 />
               )}
             </Stack.Screen>
-            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="RegisterDetail" component={RegisterDetailScreen} options={{ title: "Register" }} />
-                        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{headerShown: false}}/>
-            <Stack.Screen name="TokenAndVerification" component={TokenVerificationScreen} options={{title: "Kembali"}}/>
+            <Stack.Screen 
+              name="Register" 
+              component={RegisterScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="RegisterDetail" 
+              component={RegisterDetailScreen} 
+              options={{ title: "Register" }} 
+            />
+            <Stack.Screen 
+              name="ForgotPassword" 
+              component={ForgotPasswordScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="TokenAndVerification" 
+              component={TokenVerificationScreen} 
+              options={{ title: "Kembali" }} 
+            />
           </>
         ) : userRole === "admin" ? (
           // ===================== ADMIN ROUTES =====================
           <>
-            <Stack.Screen name="AdminHome" options={{ headerShown: false }} >
+            <Stack.Screen 
+              name="AdminHome" 
+              options={{ headerShown: false }}
+            >
               {(props) => (
                 <AdminHomeScreen
                   {...props}
                   setIsLoggedIn={setIsLoggedIn}
                   setUserRole={setUserRole}
                   setUserData={setUserData}
-                  userData={userData}  
+                  userData={userData}
                 />
               )}
             </Stack.Screen>
@@ -85,8 +107,8 @@ export default function App() {
                 <ProfileAdminScreen
                   {...props}
                   setIsLoggedIn={setIsLoggedIn}
-                  setUserRole={setUserRole}    // <-- TAMBAHKAN INI
-                  setUserData={setUserData}    // <-- TAMBAHKAN INI
+                  setUserRole={setUserRole}
+                  setUserData={setUserData}
                 />
               )}
             </Stack.Screen>
@@ -102,35 +124,86 @@ export default function App() {
         ) : (
           // ===================== MAHASISWA ROUTES =====================
           <>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-          <Stack.Screen
-            name="Profile"
-            children={(props) => (
-              <ProfileScreen
-                {...props}
-                setIsLoggedIn={setIsLoggedIn}
-                setUserRole={setUserRole}   // <-- tambahkan ini
-                setUserData={setUserData}   // juga kalau mau reset userData
-              />
-            )}
-            options={{ title: "Profil" }}
-          />
+            <Stack.Screen 
+              name="Home" 
+              component={HomeScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen
+              name="Profile"
+              children={(props) => (
+                <ProfileScreen
+                  {...props}
+                  setIsLoggedIn={setIsLoggedIn}
+                  setUserRole={setUserRole}
+                  setUserData={setUserData}
+                />
+              )}
+              options={{ title: "Profil" }}
+            />
 
-          <Stack.Screen name="Kesadaran Penuh" component={KesadaranPenuhScreen} />
-          <Stack.Screen name="Pemantauan Mahasiswa" component={PemantauanMahasiswaScreen} />
-          <Stack.Screen name="Isi Pemantauan" component={IsiPemantauanScreen} />
-          <Stack.Screen name="Hasil Pemantauan" component={HasilPemantauanScreen} />
-          <Stack.Screen name="Konsultasi" component={KonsultasiScreen} />
-          <Stack.Screen name="Pelacakan Tidur" component={PelacakanTidurScreen} />
-          <Stack.Screen name="Tips Tidur" component={TipsTidurScreen} />
-          <Stack.Screen name="Pemantauan Stres" component={PemantauanStresScreen} />
-          <Stack.Screen name="Tips Stres" component={TipsStresScreen} />
-          <Stack.Screen name="Music" component={MusicScreen} options={{ title: "Musik Relaksasi" }} />
-          {/* <Stack.Screen name="MusicDetail" component={MusicDetailScreen} options={{ title: "Detail Musik", headerShown: false }} /> */}
-          <Stack.Screen name="Breathing" component={BreathingScreen} options={{ title: "Latihan Pernapasan" }} />
-          <Stack.Screen name="Journal" component={JournalScreen} options={{ headerShown: false }} />
-        </>
+            <Stack.Screen 
+              name="Kesadaran Penuh" 
+              component={KesadaranPenuhScreen} 
+            />
+            <Stack.Screen 
+              name="Pemantauan Mahasiswa" 
+              component={PemantauanMahasiswaScreen} 
+            />
+            <Stack.Screen 
+              name="Isi Pemantauan" 
+              component={IsiPemantauanScreen} 
+            />
+            <Stack.Screen 
+              name="Hasil Pemantauan" 
+              component={HasilPemantauanScreen} 
+            />
+            <Stack.Screen 
+              name="Konsultasi" 
+              component={KonsultasiScreen} 
+            />
+            
+            {/* PELACAKAN TIDUR SCREEN WITH HCGATEWAY INTEGRATION */}
+            <Stack.Screen 
+              name="Pelacakan Tidur"
+              options={{ title: "Pelacakan Tidur" }}
+            >
+              {(props) => (
+                <PelacakanTidurScreen
+                  {...props}
+                  hcGatewayToken={userData?.hcGatewayToken}
+                />
+              )}
+            </Stack.Screen>
 
+            <Stack.Screen 
+              name="Tips Tidur" 
+              component={TipsTidurScreen} 
+            />
+            <Stack.Screen 
+              name="Pemantauan Stres" 
+              component={PemantauanStresScreen} 
+            />
+            <Stack.Screen 
+              name="Tips Stres" 
+              component={TipsStresScreen} 
+            />
+            <Stack.Screen 
+              name="Music" 
+              component={MusicScreen} 
+              options={{ title: "Musik Relaksasi" }} 
+            />
+            <Stack.Screen 
+              name="Breathing" 
+              component={BreathingScreen} 
+              options={{ title: "Latihan Pernapasan" }} 
+            />
+            <Stack.Screen 
+              name="Journal" 
+              component={JournalScreen} 
+              options={{ headerShown: false }} 
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

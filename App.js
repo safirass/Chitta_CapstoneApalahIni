@@ -36,6 +36,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [hcGatewayToken, setHCGatewayToken] = useState(null);
 
   return (
     <NavigationContainer>
@@ -61,6 +62,7 @@ export default function App() {
                   setIsLoggedIn={setIsLoggedIn}
                   setUserRole={setUserRole}
                   setUserData={setUserData}
+                  setHCGatewayToken={setHCGatewayToken}
                 />
               )}
             </Stack.Screen>
@@ -163,7 +165,7 @@ export default function App() {
               component={KonsultasiScreen} 
             />
             
-            {/* PELACAKAN TIDUR SCREEN WITH HCGATEWAY INTEGRATION */}
+            {/* PELACAKAN TIDUR SCREEN */}
             <Stack.Screen 
               name="Pelacakan Tidur"
               options={{ title: "Pelacakan Tidur" }}
@@ -180,10 +182,21 @@ export default function App() {
               name="Tips Tidur" 
               component={TipsTidurScreen} 
             />
+
+            {/* PEMANTAUAN STRES SCREEN WITH LSTM PREDICTIONS */}
             <Stack.Screen 
-              name="Pemantauan Stres" 
-              component={PemantauanStresScreen} 
-            />
+              name="Pemantauan Stres"
+              options={{ title: "Monitoring Stres" }}
+            >
+              {(props) => (
+                <PemantauanStresScreen
+                  {...props}
+                  hcGatewayToken={userData?.hcGatewayToken}
+                  userData={userData}
+                />
+              )}
+            </Stack.Screen>
+
             <Stack.Screen 
               name="Tips Stres" 
               component={TipsStresScreen} 

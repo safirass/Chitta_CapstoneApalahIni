@@ -1,75 +1,137 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
-import { sleepDataService } from '../utils/sleepDataService';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 
-export default function PelacakanTidurScreen({ hcGatewayToken }) {
-  const [sleepData, setSleepData] = useState([]);
-  const [averageSleep, setAverageSleep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+import Container from "../components/container";
+import Card from "../components/card";
+import { sleepDataService } from "../utils/sleepDataService";
+
+export default function PelacakanTidurScreen({ navigation, hcGatewayToken }) {
+  const [sleepData, setSleepData] = useState({ chart: [] }); // selalu objek supaya UI selalu tampil
+  const [selectedData, setSelectedData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('all');
+  const [error, setError] = useState(null);
+  const [selectedPeriod, setSelectedPeriod] = useState("all"); // filter periode
+  const scrollViewRef = useRef(null);
 
+  const fetchSleepData = useCallback(
+    async (token, period) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        if (!token) {
+          setError("HCGateway token tidak ditemukan. Silakan login ulang.");
+          setSleepData({ chart: [] });
+          setSelectedData(null);
+          return;
+        }
+
+        let raw = [];
+
+        if (period === "all") {
+          raw = await sleepDataService.getSleepData(token);
+        } else {
+          const endDate = new Date();
+          const days = period === "7days" ? 7 : 30;
+          const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+          raw = await sleepDataService.getSleepDataByDateRange(token, startDate, endDate);
+        }
+
+        if (!raw || !Array.isArray(raw) || raw.length === 0) {
+          setSleepData({ chart: [] });
+          setSelectedData(null);
+          // tidak set error — cukup placeholder
+          return;
+        }
+
+        const mapped = raw
+          .map((r) => {
+            const start = new Date(r.start);
+            const end = new Date(r.end);
+            const hours = (end - start) / 1000 / 3600;
+
+            return {
+              date: start.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "2-digit",
+              }),
+              hours,
+              start: start.toLocaleTimeString("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              end: end.toLocaleTimeString("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              __raw: r,
+            };
+          })
+          // sort ascending so newest is at the end (right side)
+          .sort((a, b) => {
+            const ad = new Date(a.__raw.start || a.start);
+            const bd = new Date(b.__raw.start || b.start);
+            return ad - bd;
+          });
+
+        setSleepData({ chart: mapped });
+        setSelectedData(mapped.length > 0 ? mapped[mapped.length - 1] : null);
+      } catch (err) {
+        console.error("Gagal mengambil data tidur:", err);
+        setSleepData({ chart: [] });
+        setSelectedData(null);
+        setError("Gagal memuat data tidur. Coba lagi nanti.");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    []
+  );
+
+  // load when token or period changes
   useEffect(() => {
-    if (hcGatewayToken) {
-      fetchSleepData();
-    } else {
-      setError('HCGateway token tidak ditemukan. Silakan login ulang.');
-    }
-  }, [hcGatewayToken, selectedPeriod]);
+    fetchSleepData(hcGatewayToken, selectedPeriod);
+  }, [hcGatewayToken, selectedPeriod, fetchSleepData]);
 
-  const fetchSleepData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      let data;
-      
-      if (selectedPeriod === 'all') {
-        data = await sleepDataService.getSleepData(hcGatewayToken);
-      } else if (selectedPeriod === '7days') {
-        const endDate = new Date();
-        const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-        data = await sleepDataService.getSleepDataByDateRange(hcGatewayToken, startDate, endDate);
-      } else if (selectedPeriod === '30days') {
-        const endDate = new Date();
-        const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
-        data = await sleepDataService.getSleepDataByDateRange(hcGatewayToken, startDate, endDate);
-      }
-      
-      if (data && Array.isArray(data) && data.length > 0) {
-        const sortedData = data.sort((a, b) => 
-          new Date(b.start) - new Date(a.start)
-        );
-        setSleepData(sortedData);
-        
-        const avg = sleepDataService.calculateAverageSleep(sortedData);
-        setAverageSleep(avg);
-      } else {
-        setSleepData([]);
-        setAverageSleep(0);
-        setError('Belum ada data tidur. Pastikan HCGateway sudah disinkronkan.');
-      }
-    } catch (err) {
-      setSleepData([]);
-      setError('Gagal memuat data tidur. Coba lagi nanti.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  // scroll to end when there's data
+  useEffect(() => {
+    const chartLength = sleepData?.chart?.length ?? 0;
+    if (chartLength > 0 && scrollViewRef.current) {
+      setTimeout(() => {
+        scrollViewRef.current.scrollToEnd({ animated: false });
+      }, 200);
     }
-  };
+  }, [sleepData]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchSleepData();
-  }, [hcGatewayToken, selectedPeriod]);
+    fetchSleepData(hcGatewayToken, selectedPeriod);
+  }, [hcGatewayToken, selectedPeriod, fetchSleepData]);
 
   const renderSleepQuality = (duration) => {
-    if (duration >= 7.5) return { label: 'Sangat Baik', color: '#10b981' };
-    if (duration >= 7) return { label: 'Baik', color: '#06b6d4' };
-    if (duration >= 6) return { label: 'Cukup', color: '#f59e0b' };
-    return { label: 'Kurang', color: '#ef4444' };
+    if (duration >= 7.5) return { label: "Sangat Baik", color: "#10b981" };
+    if (duration >= 7) return { label: "Baik", color: "#06b6d4" };
+    if (duration >= 6) return { label: "Cukup", color: "#f59e0b" };
+    return { label: "Kurang", color: "#ef4444" };
+  };
+
+  const chartData = sleepData?.chart ?? [];
+
+  const getSleepMessage = (hours) => {
+    if (hours == null) return "Belum ada data tidur.";
+    if (hours < 6) return "Anda kurang tidur.";
+    if (hours <= 8) return "Kualitas tidur baik!";
+    return "Anda tidur terlalu lama.";
   };
 
   if (loading && !refreshing) {
@@ -84,98 +146,105 @@ export default function PelacakanTidurScreen({ hcGatewayToken }) {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Pelacakan Tidur</Text>
-        
-        {/* Period Filter */}
+
+        {/* Period Filter (baru) */}
         <View style={styles.filterContainer}>
-          <TouchableOpacity 
-            style={[styles.filterButton, selectedPeriod === 'all' && styles.filterButtonActive]}
-            onPress={() => setSelectedPeriod('all')}
+          <TouchableOpacity
+            style={[styles.filterButton, selectedPeriod === "all" && styles.filterButtonActive]}
+            onPress={() => setSelectedPeriod("all")}
           >
-            <Text style={[styles.filterButtonText, selectedPeriod === 'all' && styles.filterButtonTextActive]}>Semua</Text>
+            <Text
+              style={[styles.filterButtonText, selectedPeriod === "all" && styles.filterButtonTextActive]}
+            >
+              Semua
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.filterButton, selectedPeriod === '7days' && styles.filterButtonActive]}
-            onPress={() => setSelectedPeriod('7days')}
+
+          <TouchableOpacity
+            style={[styles.filterButton, selectedPeriod === "7days" && styles.filterButtonActive]}
+            onPress={() => setSelectedPeriod("7days")}
           >
-            <Text style={[styles.filterButtonText, selectedPeriod === '7days' && styles.filterButtonTextActive]}>7 Hari</Text>
+            <Text
+              style={[styles.filterButtonText, selectedPeriod === "7days" && styles.filterButtonTextActive]}
+            >
+              7 Hari
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.filterButton, selectedPeriod === '30days' && styles.filterButtonActive]}
-            onPress={() => setSelectedPeriod('30days')}
+
+          <TouchableOpacity
+            style={[styles.filterButton, selectedPeriod === "30days" && styles.filterButtonActive]}
+            onPress={() => setSelectedPeriod("30days")}
           >
-            <Text style={[styles.filterButtonText, selectedPeriod === '30days' && styles.filterButtonTextActive]}>30 Hari</Text>
+            <Text
+              style={[styles.filterButtonText, selectedPeriod === "30days" && styles.filterButtonTextActive]}
+            >
+              30 Hari
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Summary Card */}
-        {sleepData.length > 0 && (
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Rata-rata Tidur</Text>
-              <Text style={styles.summaryValue}>{averageSleep} jam</Text>
+        {/* Chart Card (tetap seperti tampilan lama) */}
+        <Card title="Grafik Pelacakan Tidur" type="info">
+          {chartData.length === 0 ? (
+            <View style={styles.placeholderContainer}>
+              <Text style={styles.placeholderTitle}>Belum ada data tidur</Text>
+              <Text style={styles.placeholderSub}>
+                Pastikan HCGateway sudah disinkronkan pada perangkat Anda
+              </Text>
             </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Total Hari</Text>
-              <Text style={styles.summaryValue}>{sleepData.length}</Text>
-            </View>
-          </View>
-        )}
+          ) : (
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              showsHorizontalScrollIndicator={true}
+              contentContainerStyle={[styles.chartScroll, { width: Math.max(chartData.length * 55, 220) }]}
+            >
+              {chartData.map((item, idx) => (
+                <TouchableOpacity key={idx} style={styles.barContainer} onPress={() => setSelectedData(item)}>
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: Math.max(6, item.hours * 10),
+                        backgroundColor: selectedData?.date === item.date ? "#041062" : "#534DD9",
+                      },
+                    ]}
+                  />
+                  <Text style={styles.barLabel}>{item.date}</Text>
+                  <Text style={styles.barHours}>{item.hours.toFixed(1)}j</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </Card>
 
-        {error && (
+        <Card title="Durasi Tidur Hari Ini">
+          <Text style={styles.duration}>
+            {selectedData?.hours != null ? selectedData.hours.toFixed(1) : "--"} jam
+          </Text>
+          <Text style={styles.subText}>
+            {selectedData?.start || "--"} - {selectedData?.end || "--"}
+          </Text>
+          <Text style={styles.subText}>{getSleepMessage(selectedData?.hours)}</Text>
+        </Card>
+
+        <Card title="Tips Tidur">
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation && navigation.navigate && navigation.navigate("Tips Tidur")}
+          >
+            <Text style={styles.buttonText}>Lihat Tips</Text>
+          </TouchableOpacity>
+        </Card>
+
+        {error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
-        )}
-        
-        {sleepData && sleepData.length > 0 ? (
-          <View>
-            <Text style={styles.sectionTitle}>Riwayat Tidur</Text>
-            {sleepData.map((sleep, index) => {
-              const duration = sleepDataService.parseSleepDuration(sleep);
-              const quality = renderSleepQuality(duration);
-              
-              return (
-                <View key={index} style={styles.sleepCard}>
-                  <View style={styles.sleepHeader}>
-                    <View style={styles.sleepHeaderLeft}>
-                      <Text style={styles.sleepDate}>
-                        {sleepDataService.formatDate(sleep.start)}
-                      </Text>
-                      <View style={[styles.qualityBadge, { backgroundColor: quality.color }]}>
-                        <Text style={styles.qualityText}>{quality.label}</Text>
-                      </View>
-                    </View>
-                    <Text style={[styles.sleepDuration, { color: quality.color }]}>
-                      {duration} jam
-                    </Text>
-                  </View>
-                  <View style={styles.sleepTimes}>
-                    <Text style={styles.sleepTime}>
-                      🌙 Tidur: {sleepDataService.formatTime(sleep.start)}
-                    </Text>
-                    <Text style={styles.sleepTime}>
-                      ☀️ Bangun: {sleepDataService.formatTime(sleep.end)}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Tidak ada data tidur tersedia</Text>
-            <Text style={styles.emptySubtext}>
-              Pastikan HCGateway sudah disinkronkan di perangkat Anda
-            </Text>
-          </View>
-        )}
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -184,28 +253,30 @@ export default function PelacakanTidurScreen({ hcGatewayToken }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3EFFF'
+    backgroundColor: "#F3EFFF",
   },
   content: {
-    padding: 20
+    padding: 20,
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F3EFFF'
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F3EFFF",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 15,
-    color: '#1a1a1a'
+    color: "#1a1a1a",
   },
+
+  /* filter styles */
   filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    gap: 10
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    gap: 10,
   },
   filterButton: {
     flex: 1,
@@ -213,130 +284,105 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
-    alignItems: 'center'
+    borderColor: "#ddd",
+    alignItems: "center",
+    marginHorizontal: 4,
+    backgroundColor: "#fff",
   },
   filterButtonActive: {
-    backgroundColor: '#6B46C1',
-    borderColor: '#6B46C1'
+    backgroundColor: "#6B46C1",
+    borderColor: "#6B46C1",
   },
   filterButtonText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#666'
+    fontWeight: "600",
+    color: "#666",
   },
   filterButtonTextActive: {
-    color: '#fff'
+    color: "#fff",
   },
+
+  /* chart & cards (as before) */
+  chartScroll: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  barContainer: { alignItems: "center", marginHorizontal: 6, width: 45 },
+  bar: { width: 30, borderRadius: 6 },
+  barLabel: { fontSize: 12 },
+  barHours: { fontSize: 11 },
+  duration: { fontSize: 28, fontWeight: "700", color: "#041062" },
+  subText: { fontSize: 14, color: "#555", marginTop: 4 },
+  button: {
+    marginTop: 12,
+    backgroundColor: "#534DD9",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: { color: "#fff", fontWeight: "600" },
+
+  placeholderContainer: {
+    height: 140,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  placeholderTitle: {
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  placeholderSub: {
+    fontSize: 12,
+    color: "#999",
+    textAlign: "center",
+    paddingHorizontal: 20,
+  },
+
+  /* summary card */
   summaryCard: {
-    backgroundColor: '#6B46C1',
+    backgroundColor: "#6B46C1",
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center'
+    padding: 14,
+    marginBottom: 14,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
   },
   summaryItem: {
-    alignItems: 'center',
-    flex: 1
+    alignItems: "center",
+    flex: 1,
   },
   summaryDivider: {
     width: 1,
     height: 40,
-    backgroundColor: 'rgba(255,255,255,0.3)'
+    backgroundColor: "rgba(255,255,255,0.3)",
   },
   summaryLabel: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 13,
-    marginBottom: 5
+    marginBottom: 5,
   },
   summaryValue: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold'
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#1a1a1a'
-  },
-  sleepCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#6B46C1',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2
-  },
-  sleepHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12
-  },
-  sleepHeaderLeft: {
-    flex: 1,
-    gap: 8
-  },
-  sleepDate: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a1a'
-  },
-  qualityBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-    alignSelf: 'flex-start'
-  },
-  qualityText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '600'
-  },
-  sleepDuration: {
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: "bold",
   },
-  sleepTimes: {
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingTop: 10
-  },
-  sleepTime: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 6
-  },
+
+  /* error */
   errorContainer: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: "#fee2e2",
     borderRadius: 8,
     padding: 12,
-    marginBottom: 15
+    marginTop: 12,
   },
   errorText: {
-    color: '#dc2626',
-    fontSize: 14
+    color: "#dc2626",
+    fontSize: 14,
+    textAlign: "center",
   },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: 40
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-    marginBottom: 8
-  },
-  emptySubtext: {
-    fontSize: 13,
-    color: '#bbb',
-    textAlign: 'center'
-  }
 });

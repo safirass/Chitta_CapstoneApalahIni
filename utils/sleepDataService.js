@@ -21,9 +21,12 @@ export const sleepDataService = {
       
       console.log('✅ HCGateway login successful:', response.data);
       
+      // Use username as userId if user_id is not in response
+      const userId = response.data.user_id || username;
+      
       return {
         token: response.data.token,
-        userId: response.data.user_id,
+        userId: userId,
         refreshToken: response.data.refresh,
         expiry: response.data.expiry
       };
@@ -33,7 +36,7 @@ export const sleepDataService = {
     }
   },
 
-  // Get all sleep data - Uses POST with empty queries
+  // Get all sleep data
   async getSleepData(token) {
     try {
       console.log('📡 Fetching sleep data with token...');
@@ -41,7 +44,7 @@ export const sleepDataService = {
       const response = await axios.post(
         `${HC_GATEWAY_API}/api/v2/fetch/sleepSession`,
         {
-          queries: {} // Empty queries to get all sleep data
+          queries: {}
         },
         {
           headers: {
@@ -60,7 +63,85 @@ export const sleepDataService = {
     }
   },
 
-  // Get sleep data for a specific date range
+  // Get heart rate data
+  async getHeartRateData(token) {
+    try {
+      console.log('📡 Fetching heart rate data...');
+
+      const response = await axios.post(
+        `${HC_GATEWAY_API}/api/v2/fetch/heartRate`,
+        { queries: {} },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        }
+      );
+
+      const data = response.data || [];
+      console.log('✅ Heart rate:', data.length, 'records');
+      return data;
+    } catch (error) {
+      console.error('❌ HR fetch error:', error.message);
+      return [];
+    }
+  },
+
+  // Get respiratory rate data
+  async getRespiratoryRateData(token) {
+    try {
+      console.log('📡 Fetching respiratory rate data...');
+
+      const response = await axios.post(
+        `${HC_GATEWAY_API}/api/v2/fetch/respiratoryRate`,
+        { queries: {} },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        }
+      );
+
+      const data = response.data || [];
+      console.log('✅ Respiratory rate:', data.length, 'records');
+      return data;
+    } catch (error) {
+      console.error('❌ RR fetch error:', error.message);
+      return [];
+    }
+  },
+
+  // Get vital signs and extract values for LSTM
+  async getVitalSignsForLSTM(token) {
+    try {
+      console.log('📊 Fetching vital signs for LSTM...');
+
+      const [hrData, rrData] = await Promise.all([
+        this.getHeartRateData(token),
+        this.getRespiratoryRateData(token)
+      ]);
+
+      // Extract just the values
+      const hrValues = hrData.map(item => item.value || 0);
+      const rrValues = rrData.map(item => item.value || 0);
+
+      console.log(`✅ Got ${hrValues.length} HR and ${rrValues.length} RR values`);
+
+      return {
+        hr_values: hrValues,
+        resp_values: rrValues
+      };
+    } catch (error) {
+      console.error('❌ Error getting vital signs:', error.message);
+      throw error;
+    }
+  },
+
+  // Get sleep data by date range
   async getSleepDataByDateRange(token, startDate, endDate) {
     try {
       const response = await axios.post(

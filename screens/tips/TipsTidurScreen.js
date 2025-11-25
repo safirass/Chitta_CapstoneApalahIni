@@ -5,17 +5,42 @@ export default function TipsTidurScreen() {
     return (
         <ScrollView style={styles.container}>
             <View style={styles.card}>
-                <Text style={styles.title}>Tips Tidur</Text>
+                <Text style={styles.title}>Tips Tidur Berkualitas</Text>
+
                 <Image
-                    source={require('../../assets/tidur.jpg')} 
-                    style={styles.image} 
+                    source={require('../../assets/tidur.jpg')}
+                    style={styles.image}
                 />
+
                 <Text style={styles.desc}>
-                    Berikut beberapa tips untuk membantu Anda mendapatkan tidur yang lebih baik:
+                    1. Cek apa yang kamu makan & minum seharian atau 1–2 jam sebelum tidur.
+                    {'\n'}- Jika metabolisme rendah, minum kopi pagi/siang bisa bikin melek sampai subuh.
+                    {'\n'}- Jangan tidur setelah makan berat, beri jeda sekitar 2 jam.
+                </Text>
+
+                <Text style={styles.desc}>
+                    2. Persiapkan tubuh untuk tidur.
+                    {'\n'}Jika terlalu capek, tubuh malah sulit tidur. Pijat lembut area tegang: kepala, wajah, tengkuk, pundak, betis, hingga telapak kaki.
+                    {'\n'}Jika pikiran mengganggu, katakan: "Sementara cukup untuk hari ini. Besok lagi ya."
+                </Text>
+
+                <Text style={styles.desc}>
+                    3. Siapkan suasana yang mendukung.
+                    {'\n'}Ruang yang rapi, bersih, nyaman dilihat. Pilih warna sprei yang kamu suka. Buang sampah, gunakan pewangi ruangan jika perlu.
+                    {'\n'}Putar musik pengantar tidur jika itu membantu.
+                </Text>
+
+                <Text style={styles.desc}>
+                    4. Padamkan lampu agar tubuh menghasilkan melatonin optimal.
+                    {'\n'}Tidur gelap membuat tubuh melakukan pembersihan sampah sel & regenerasi sehingga bangun lebih segar.
+                </Text>
+
+                <Text style={styles.desc}>
+                    5. Tubuhmu butuh istirahat, bukan hanya tidur.
+                    {'\n'}Jangan biasakan obat tidur. Fokus pada kualitas istirahat agar bangun tidak capek.
                 </Text>
             </View>
         </ScrollView>
-
     );
 }
 
@@ -25,42 +50,28 @@ const styles = StyleSheet.create({
         backgroundColor: '#EFECFE',
         padding: 16,
     },
-    header: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 16,
-    },
     card: {
-        flexDirection: 'column',
-        justifyContent: 'space-between',
         backgroundColor: '#fff',
         borderRadius: 16,
         padding: 16,
         marginBottom: 16,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 6,
         elevation: 3,
     },
     title: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 6,
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 10,
     },
     image: {
         width: '100%',
-        height: 200,
+        height: 250,
         borderRadius: 12,
         marginBottom: 12,
     },
     desc: {
-        fontSize: 13,
-        color: '#666',
+        fontSize: 14,
+        color: '#555',
+        marginBottom: 12,
+        lineHeight: 20,
     },
-    textContainer: {
-        flex: 1,
-        paddingRight: 10,
-    },
-
 });

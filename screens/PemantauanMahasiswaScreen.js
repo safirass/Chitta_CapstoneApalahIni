@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
 View,
 Text,
@@ -8,11 +8,11 @@ TouchableOpacity,
 Dimensions,
 Linking,
 ActivityIndicator,
-Alert,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Container from "../components/container";
 import Card from "../components/card";
+import { Picker } from "@react-native-picker/picker";
 
 const screenWidth = Dimensions.get("window").width - 30;
 
@@ -45,9 +45,6 @@ const levelKeterangan = {
 4: "Sangat Berat",
 };
 
-// === API BASE URL ===
-// const API_BASE_URL = "http://10.0.2.2:8000/api"; // ganti sesuai backend kamu
-
 const monthNames = [
 "Januari",
 "Februari",
@@ -63,7 +60,6 @@ const monthNames = [
 "Desember",
 ];
 
-// === Generate daftar bulan dari data pertama ke sekarang ===
 const generateMonthListFromData = (riwayatData) => {
 const allKeys = Object.keys(riwayatData);
 if (allKeys.length === 0) return [];
@@ -101,13 +97,20 @@ const monthList = useMemo(
     [riwayatPerBulan]
 );
 
+// Filter controls
+const [selectedFilterYear, setSelectedFilterYear] = useState("");
+const [selectedFilterMonthName, setSelectedFilterMonthName] = useState("");
+
+// selectedMonth = "Bulan Tahun" yang digunakan untuk menampilkan data
 const [selectedMonth, setSelectedMonth] = useState("");
-const scrollRef = useRef(null);
 
 // === Fetch data dari API / fallback ke dummy ===
 useEffect(() => {
     const fetchData = async () => {
     try {
+        if (typeof API_BASE_URL === "undefined") {
+        throw new Error("API_BASE_URL tidak diset");
+        }
         const res = await fetch(`${API_BASE_URL}/screening/riwayat`);
         if (!res.ok) throw new Error("Respon server tidak valid");
         const data = await res.json();
@@ -125,18 +128,51 @@ useEffect(() => {
     fetchData();
 }, []);
 
-// Set bulan terakhir otomatis
 useEffect(() => {
     if (monthList.length > 0) {
-    setSelectedMonth(monthList[monthList.length - 1]);
+    const last = monthList[monthList.length - 1]; // "Bulan Tahun"
+    setSelectedMonth(last);
+
+    const [mName, y] = last.split(" ");
+    setSelectedFilterYear(y);
+    setSelectedFilterMonthName(mName);
     }
 }, [monthList]);
 
+const availableYears = useMemo(() => {
+    const ys = monthList.map((m) => m.split(" ")[1]);
+    return Array.from(new Set(ys)).sort();
+}, [monthList]);
+
+const monthsForYear = useMemo(() => {
+    if (!selectedFilterYear) return [];
+    return monthList
+    .filter((m) => m.endsWith(String(selectedFilterYear)))
+    .map((m) => m.split(" ")[0]);
+}, [monthList, selectedFilterYear]);
+
 useEffect(() => {
-    setTimeout(() => {
-    if (scrollRef.current) scrollRef.current.scrollToEnd({ animated: true });
-    }, 300);
-}, [selectedMonth]);
+    if (selectedFilterYear) {
+    const mList = monthsForYear;
+    if (mList.length > 0) {
+        if (!mList.includes(selectedFilterMonthName)) {
+        setSelectedFilterMonthName(mList[0]);
+        setSelectedMonth(`${mList[0]} ${selectedFilterYear}`);
+        } else {
+        setSelectedMonth(`${selectedFilterMonthName} ${selectedFilterYear}`);
+        }
+    } else {
+        setSelectedFilterMonthName("");
+        setSelectedMonth("");
+    }
+    }
+}, [selectedFilterYear]); // eslint-disable-line react-hooks/exhaustive-deps
+
+useEffect(() => {
+    if (selectedFilterMonthName && selectedFilterYear) {
+    setSelectedMonth(`${selectedFilterMonthName} ${selectedFilterYear}`);
+    }
+}, [selectedFilterMonthName, selectedFilterYear]);
 
 if (loading) {
     return (
@@ -164,6 +200,18 @@ const isEmpty = dataBulanIni.length === 0;
 
 const handleOpenLink = () => Linking.openURL("https://linktr.ee/undip.studentcare");
 
+const buildDetailFromItem = (item) => {
+    const build = (domain) => ({
+    keterangan: `Skor: ${item[domain] ?? "-"} — Kategori: ${levelKeterangan[item[domain]] ?? "-"}`,
+    skor: item[domain] ?? null,
+    });
+    return {
+    Depresi: build("Depresi"),
+    Kecemasan: build("Kecemasan"),
+    Stres: build("Stres"),
+    };
+};
+
 return (
     <Container>
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -174,41 +222,51 @@ return (
         <Text style={styles.buttonText}>Lakukan Pemantauan</Text>
         </TouchableOpacity>
 
-        {/* === Pilihan bulan === */}
-        <ScrollView
-        horizontal
-        ref={scrollRef}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.monthSelector}
-        >
-        {monthList.map((bulan) => (
-            <TouchableOpacity
-            key={bulan}
-            style={[
-                styles.monthButton,
-                selectedMonth === bulan && styles.monthButtonActive,
-            ]}
-            onPress={() => setSelectedMonth(bulan)}
+        {/* === Filter bar: Year + Month (HANYA PICKER) dengan label === */}
+        <View style={styles.filterRow}>
+        <View style={[styles.filterColumn, { width: 130 }]}>
+            <Text style={styles.filterLabel}>Tahun</Text>
+            <View style={styles.yearWrap}>
+            <Picker
+                selectedValue={selectedFilterYear}
+                onValueChange={(val) => setSelectedFilterYear(val)}
+                style={styles.pickerAndroid}
+                mode="dropdown"
+                dropdownIconColor="#041062"
             >
-            <Text
-                style={[
-                styles.monthText,
-                selectedMonth === bulan && styles.monthTextActive,
-                ]}
+                <Picker.Item label="— Pilih Tahun —" value="" />
+                {availableYears.map((y) => (
+                <Picker.Item key={y} label={String(y)} value={String(y)} />
+                ))}
+            </Picker>
+            </View>
+        </View>
+
+        <View style={[styles.filterColumn, { flex: 1, marginLeft: 10 }]}>
+            <Text style={styles.filterLabel}>Bulan</Text>
+            <View style={styles.monthWrap}>
+            <Picker
+                selectedValue={selectedFilterMonthName}
+                onValueChange={(val) => setSelectedFilterMonthName(val)}
+                enabled={monthsForYear.length > 0}
+                style={styles.pickerAndroid}
+                mode="dropdown"
+                dropdownIconColor="#041062"
             >
-                {bulan}
-            </Text>
-            </TouchableOpacity>
-        ))}
-        </ScrollView>
+                <Picker.Item label="— Pilih Bulan —" value="" />
+                {monthsForYear.map((m) => (
+                <Picker.Item key={m} label={m} value={m} />
+                ))}
+            </Picker>
+            </View>
+        </View>
+        </View>
 
         {/* === Grafik === */}
         <Card title={`Grafik Pemantauan ${selectedMonth}`} type="info">
         {isEmpty ? (
             <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-                Belum melakukan pemantauan pada bulan ini.
-            </Text>
+            <Text style={styles.emptyText}>Belum melakukan pemantauan pada bulan ini.</Text>
             </View>
         ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -247,23 +305,24 @@ return (
         <Card title={`Riwayat Pemantauan ${selectedMonth}`}>
         {isEmpty ? (
             <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-                Belum melakukan pemantauan pada bulan ini.
-            </Text>
+            <Text style={styles.emptyText}>Belum melakukan pemantauan pada bulan ini.</Text>
             </View>
         ) : (
             dataBulanIni.map((item, index) => (
             <TouchableOpacity
                 key={index}
                 style={styles.historyItem}
-                onPress={() => navigation.navigate("Hasil Pemantauan", { data: item })}
+                onPress={() =>
+                navigation.navigate("Hasil Pemantauan", {
+                    data: { ...item, detail: buildDetailFromItem(item) },
+                })
+                }
             >
                 <Text style={styles.historyDate}>Tanggal: {item.tanggal}</Text>
                 <Text style={styles.historyText}>
-                Depresi: {levelKeterangan[item.Depresi]} | Kecemasan:{" "}
-                {levelKeterangan[item.Kecemasan]} | Stres:{" "}
-                {levelKeterangan[item.Stres]}
+                Depresi: {levelKeterangan[item.Depresi]} | Kecemasan: {levelKeterangan[item.Kecemasan]} | Stres: {levelKeterangan[item.Stres]}
                 </Text>
+                <Text style={styles.moreText}>Lihat selengkapnya →</Text>
             </TouchableOpacity>
             ))
         )}
@@ -311,22 +370,51 @@ button: {
     marginBottom: 20,
 },
 buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-monthSelector: {
+filterRow: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    marginBottom: 10,
+    alignItems: "flex-start",
+    marginBottom: 12,
 },
-monthButton: {
-    backgroundColor: "#E9E8FF",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginHorizontal: 5,
+filterColumn: {
+    flexDirection: "column",
 },
-monthButtonActive: { backgroundColor: "#534DD9" },
-monthText: { color: "#041062", fontSize: 14, fontWeight: "500" },
-monthTextActive: { color: "#fff", fontWeight: "bold" },
+filterLabel: {
+    fontSize: 13,
+    color: "#333",
+    marginBottom: 6,
+    marginLeft: 4,
+    fontWeight: "600",
+},
+yearWrap: {
+    width: 130,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E6E6FA",
+    overflow: "hidden",
+    height: 50,
+    justifyContent: "center",
+    paddingHorizontal: 6,
+    color: "#000",
+},
+monthWrap: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#E6E6FA",
+    overflow: "hidden",
+    height: 50,
+    justifyContent: "center",
+    paddingHorizontal: 6,
+    color: "#000",
+},
+pickerAndroid: {
+    height: 48,
+    width: "100%",
+    color: "#041062",
+    fontSize: 15,
+},
 emptyContainer: { alignItems: "center", paddingVertical: 20 },
 emptyText: { color: "#777", fontSize: 14 },
 levelNote: { textAlign: "center", fontSize: 12, color: "#555", marginTop: 8 },
@@ -339,6 +427,13 @@ historyItem: {
     borderColor: "#E0E0FF",
 },
 historyDate: { fontWeight: "bold", color: "#041062", marginBottom: 4 },
+moreText: {
+    marginTop: 8,
+    color: "#4275daff",
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "right",
+},
 historyText: { color: "#333", fontSize: 13 },
 linkButton: {
     backgroundColor: "#534DD9",

@@ -17,8 +17,15 @@ export default function HomeScreen() {
 const navigation = useNavigation();
 const route = useRoute();
 
-// Ambil data user dari login
-const { userData } = route.params || { userData: { nama: "WARGA UNDIP" } };
+// Log untuk debug: lihat apakah params dikirim
+useEffect(() => {
+    console.log("Home screen params:", route.params);
+}, [route.params]);
+
+// Ambil data user dari login (fallback aman)
+const userData = route.params?.userData ?? null;
+const namaUser = userData?.nama ?? "Dips!";
+const fotoUser = userData?.foto ?? null;
 
 const [greeting, setGreeting] = useState("");
 
@@ -30,39 +37,31 @@ useEffect(() => {
     else setGreeting("Selamat Malam");
 }, []);
 
-const namaUser = userData?.nama || "Warga UNDIP";
-const fotoUser = userData?.foto || null;
 const FeatureButton = ({ icon, label, color, onPress }) => (
-<TouchableOpacity style={styles.featureButton} onPress={onPress}>
+    <TouchableOpacity style={styles.featureButton} onPress={onPress}>
     <View style={[styles.iconContainer, { backgroundColor: color }]}>
-    <Icon name={icon} size={28} color="#fff" />
+        <Icon name={icon} size={28} color="#fff" />
     </View>
     <Text style={styles.featureLabel}>{label}</Text>
-</TouchableOpacity>
+    </TouchableOpacity>
 );
 
 return (
     <Container>
     <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header Section */}
         <TouchableOpacity
         style={styles.header}
         onPress={() => navigation.navigate("Profile", { userData })}
         >
         <Image
             style={styles.avatar}
-            source={
-            fotoUser
-                ? { uri: fotoUser }
-                : require("../assets/chitta.png")
-            }
+            source={fotoUser ? { uri: fotoUser } : require("../assets/chitta.png")}
         />
         <View>
             <Text style={styles.greeting}>{greeting}</Text>
             <Text style={styles.name}>{namaUser}</Text>
         </View>
         </TouchableOpacity>
-
         <Card
         title="Mulai Mengobrol dengan Chat AI"
         description="Asisten AI kami siap menemanimu berbagi cerita dan memberikan saran."
